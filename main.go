@@ -149,24 +149,60 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 	return
 }
 
+func maxDistance(numbers []float64) float64 {
+	mmax := -1000000.0
+	mmin := 10000000.0
+	for _, n := range numbers {
+		if n < mmin {
+			mmin = n
+		}
+		if n > mmax {
+			mmax = n
+		}
+	}
+	log.Debug(mmin, mmax)
+	return mmax - mmin
+}
+
+func multiply(ds []float64, x float64) []float64 {
+	for i, v := range ds {
+		ds[i] = v * x
+	}
+	return ds
+}
+
+func normalize(ds []float64) []float64 {
+	return multiply(ds, 1.0/maxDistance(ds))
+}
+
 func processScore(p HandData) {
 	// reduce frame rate a little bit
 	if rand.Float64() > float64(flagFrameRate)/100.0 {
 		return
 	}
 	for i, hand := range p.MultiHandLandmarks {
+		log.Debugf("len(hand)=%d", len(hand))
 		xs := make([]float64, len(hand))
 		ys := make([]float64, len(hand))
 		zs := make([]float64, len(hand))
 		ws := make([]float64, len(hand))
+
 		for j, coord := range hand {
 			xs[j] = coord.X
-			ys[j] = 1 - coord.Y
+			ys[j] = coord.Y
 			zs[j] = coord.Z
-			ws[j] = 1
+			ws[j] = 1.0
 		}
-		meanX, stdX := stat.MeanStdDev(xs, ws)
-		meanY, stdY := stat.MeanStdDev(ys, ws)
+		xsn := multiply(xs, 1)
+		ysn := multiply(ys, 1.0)
+		log.Debugf("maxDistance(ys): %f", maxDistance(ys))
+		log.Debugf("x: %+v", xsn)
+		log.Debugf("y: %+v", ysn)
+		// log.Debugf("y: %+v", ys, maxDistance(ys))
+		// log.Debugf("z: %+v", zs, maxDistance(zs))
+
+		meanX, stdX := stat.MeanStdDev(xsn, ws)
+		meanY, stdY := stat.MeanStdDev(ysn, ws)
 		meanZ, stdZ := stat.MeanStdDev(zs, ws)
 		_ = meanZ
 		_ = stdZ
@@ -183,17 +219,17 @@ func processScore(p HandData) {
 		}
 		ma[p.MultiHandedness[i].Label][0].Add(meanX)
 		ma[p.MultiHandedness[i].Label][1].Add(meanY)
-		ma[p.MultiHandedness[i].Label][2].Add(spread)
+		ma[p.MultiHandedness[i].Label][2].Add(meanZ)
 
 		meanX = ma[p.MultiHandedness[i].Label][0].Avg()
 		meanY = ma[p.MultiHandedness[i].Label][1].Avg()
 		spread = ma[p.MultiHandedness[i].Label][2].Avg()
-		log.Debugf("%s: (%2.2f, %2.2f, %2.2f)", p.MultiHandedness[i].Label, meanX, meanY, spread)
-		msg := osc.NewMessage("/" + strings.ToLower(p.MultiHandedness[i].Label))
-		msg.Append(meanX)
-		msg.Append(meanY)
-		msg.Append(spread)
-		client.Send(msg)
+		log.Debugf("%s: (%2.2f, %2.2f, %2.2f)", p.MultiHandedness[i].Label, meanX, meanY, meanZ)
+		// msg := osc.NewMessage("/" + strings.ToLower(p.MultiHandedness[i].Label))
+		// msg.Append(meanX)
+		// msg.Append(meanY)
+		// msg.Append(spread)
+		// client.Send(msg)
 	}
 }
 

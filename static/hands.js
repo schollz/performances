@@ -122,8 +122,8 @@ new controls
         selfieMode: true,
         maxNumHands: 2,
         modelComplexity: 1,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5
+        minDetectionConfidence: 0.6,
+        minTrackingConfidence: 0.6
     })
     .add([
         new controls.StaticText({ title: 'MediaPipe Hands' }),
