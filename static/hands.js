@@ -78,9 +78,6 @@ function onResults(results) {
             const classification = results.multiHandedness[index];
             const isRightHand = classification.label === 'Right';
             const landmarks = results.multiHandLandmarks[index];
-            if (isRightHand && (index == 0 || index == 22)) {
-                console.log(landmarks[1]);
-            }
             drawingUtils.drawConnectors(
                 canvasCtx, landmarks, mpHands.HAND_CONNECTIONS, { color: isRightHand ? '#00FF00' : '#FF0000' });
             drawingUtils.drawLandmarks(canvasCtx, landmarks, {
