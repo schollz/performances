@@ -1,5 +1,7 @@
 github.com/RobinUS2/golang-moving-average v1.0.0 h1:PD7DDZNt+UFb9XlsBbTIu/DtXqqaD/MD86DYnk3mwvA=
 github.com/RobinUS2/golang-moving-average v1.0.0/go.mod h1:MdzhY+KoEvi+OBygTPH0OSaKrOJzvILWN2SPQzaKVsY=
+github.com/fxsjy/RF.go v0.0.0-20140710024358-46700521f302 h1:HBwROrKlC9eKnmRSZDXy8ABYjHV27S/gdHwf9DiHOhc=
+github.com/fxsjy/RF.go v0.0.0-20140710024358-46700521f302/go.mod h1:q+5DQKh8FgEsxeb21LVGGXfJ2ogSR4vqyRpdnxIEe5s=
 github.com/gorilla/websocket v1.5.0 h1:PPwGk2jz7EePpoHN/+ClbZu8SPxiqlu12wZP/3sWmnc=
 github.com/gorilla/websocket v1.5.0/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/hypebeast/go-osc v0.0.0-20220308234300-cec5a8a1e5f5 h1:fqwINudmUrvGCuw+e3tedZ2UJ0hklSw6t8UPomctKyQ=
