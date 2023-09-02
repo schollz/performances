@@ -32,6 +32,7 @@ var static embed.FS
 var fsStatic http.Handler
 var forest [2]*RF.Forest
 var classifications [][]string
+var classifyCurrent []string
 
 var flagLearn string
 var flagFrameRate, flagOSCPort, flagPort int
@@ -48,6 +49,7 @@ func init() {
 	classifications = make([][]string, 2)
 	classifications[0] = make([]string, 3)
 	classifications[1] = make([]string, 3)
+	classifyCurrent = make([]string, 2)
 
 	ma = make(map[string][]*movingaverage.ConcurrentMovingAverage)
 	ma["Left"] = make([]*movingaverage.ConcurrentMovingAverage, 3)
@@ -61,18 +63,20 @@ func init() {
 	flag.IntVar(&flagOSCPort, "osc port", 57120, "port to send osc messages")
 	flag.BoolVar(&flagOpen, "open", false, "don't open browser")
 	flag.BoolVar(&flagBuildRF, "build", false, "don't build")
-	flag.StringVar(&flagOSCHost, "osc host", "localhost", "host to send osc messages")
+	flag.StringVar(&flagOSCHost, "osc host", "127.0.0.1", "host to send osc messages")
 	flag.StringVar(&flagLearn, "learn", "", "gesture learning file")
 }
 
 func main() {
 	flag.Parse()
+	client = osc.NewClient("127.0.0.1", 57120)
+
 	if flagBuildRF {
 		for i := 0; i < 2; i++ {
 			buildRandomForests(i)
 		}
 	}
-	client = osc.NewClient(flagOSCHost, flagOSCPort)
+
 	for i := 0; i < 2; i++ {
 		forest[i] = RF.LoadForest(fmt.Sprintf("%d.bin", i))
 	}
@@ -354,7 +358,18 @@ func processScore(p HandData, c *websocket.Conn) {
 		classifications[lrName[handedness]][1] = classifications[lrName[handedness]][0]
 		classifications[lrName[handedness]][0] = output
 		log.Debugf("%s prediction: %s", handedness, output)
+
+		meanX, _ := stat.MeanStdDev(xs, ws)
+		meanY, _ := stat.MeanStdDev(ys, ws)
+		ma[p.MultiHandedness[i].Label][0].Add(meanX)
+		ma[p.MultiHandedness[i].Label][1].Add(meanY)
+
+		meanX = ma[p.MultiHandedness[i].Label][0].Avg()
+		meanY = ma[p.MultiHandedness[i].Label][1].Avg()
+		// log.Debugf("%s: (%2.2f, %2.2f, %2.2f)", p.MultiHandedness[i].Label, meanX, meanY, meanZ)
+
 		if classifications[lrName[handedness]][0] == classifications[lrName[handedness]][1] && classifications[lrName[handedness]][0] == classifications[lrName[handedness]][2] {
+			classifyCurrent[lrName[handedness]] = output
 			mutex.Lock()
 			c.WriteJSON(Message{
 				"updateElement",
@@ -362,43 +377,20 @@ func processScore(p HandData, c *websocket.Conn) {
 			})
 			mutex.Unlock()
 		}
-		continue
 
-		xsn := multiply(xs, 1)
-		ysn := multiply(ys, 1.0)
-		log.Debugf("maxDistance(ys): %f", maxDistance(ys))
-		// log.Debugf("y: %+v", ys, maxDistance(ys))
-		// log.Debugf("z: %+v", zs, maxDistance(zs))
-
-		meanX, stdX := stat.MeanStdDev(xsn, ws)
-		meanY, stdY := stat.MeanStdDev(ysn, ws)
-		meanZ, stdZ := stat.MeanStdDev(zs, ws)
-		_ = meanZ
-		_ = stdZ
-		_ = stdX
-		_ = stdY
-		spread := dist(hand[0].X, hand[0].Y, hand[12].X, hand[12].Y) / dist(hand[0].X, hand[0].Y, hand[17].X, hand[17].Y)
-		spread = spread - 0.4
-		spread = spread / 1.9
-		if spread < 0 {
-			spread = 0
+		if classifyCurrent[lrName[handedness]] != "" {
+			log.Debug("sending osc message", meanX, meanY)
+			msg := osc.NewMessage("/conductor")
+			msg.Append(handedness)
+			msg.Append(classifyCurrent[lrName[handedness]])
+			msg.Append(meanX)
+			msg.Append(meanY)
+			cErr := client.Send(msg)
+			if cErr != nil {
+				log.Error(cErr)
+			}
 		}
-		if spread > 1 {
-			spread = 1
-		}
-		ma[p.MultiHandedness[i].Label][0].Add(meanX)
-		ma[p.MultiHandedness[i].Label][1].Add(meanY)
-		ma[p.MultiHandedness[i].Label][2].Add(meanZ)
 
-		meanX = ma[p.MultiHandedness[i].Label][0].Avg()
-		meanY = ma[p.MultiHandedness[i].Label][1].Avg()
-		spread = ma[p.MultiHandedness[i].Label][2].Avg()
-		log.Debugf("%s: (%2.2f, %2.2f, %2.2f)", p.MultiHandedness[i].Label, meanX, meanY, meanZ)
-		// msg := osc.NewMessage("/" + strings.ToLower(p.MultiHandedness[i].Label))
-		// msg.Append(meanX)
-		// msg.Append(meanY)
-		// msg.Append(spread)
-		// client.Send(msg)
 	}
 }
 
