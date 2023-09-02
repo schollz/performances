@@ -30,15 +30,20 @@ var mutex sync.Mutex
 //go:embed static
 var static embed.FS
 var fsStatic http.Handler
-var rightForest *RF.Forest
+var forest [2]*RF.Forest
 
 var flagLearn string
 var flagFrameRate, flagOSCPort, flagPort int
 var flagOSCHost string
 var flagOpen, flagBuildRF bool
 var ma map[string][]*movingaverage.ConcurrentMovingAverage
+var lrName map[string]int
 
 func init() {
+	lrName = make(map[string]int)
+	lrName["left"] = 0
+	lrName["right"] = 1
+
 	ma = make(map[string][]*movingaverage.ConcurrentMovingAverage)
 	ma["Left"] = make([]*movingaverage.ConcurrentMovingAverage, 3)
 	ma["Right"] = make([]*movingaverage.ConcurrentMovingAverage, 3)
@@ -58,10 +63,14 @@ func init() {
 func main() {
 	flag.Parse()
 	if flagBuildRF {
-		testRF()
+		for i := 0; i < 2; i++ {
+			buildRandomForests(i)
+		}
 	}
 	client = osc.NewClient(flagOSCHost, flagOSCPort)
-	rightForest = RF.LoadForest("rf.bin")
+	for i := 0; i < 2; i++ {
+		forest[i] = RF.LoadForest(fmt.Sprintf("%d.bin", i))
+	}
 
 	fsRoot, _ := fs.Sub(static, "static")
 	fsStatic = http.FileServer(http.FS(fsRoot))
@@ -156,7 +165,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 			log.Debug("read:", err)
 			break
 		} else {
-			go processScore(p)
+			go processScore(p, c)
 		}
 	}
 	return
@@ -208,9 +217,9 @@ func distances(xs []float64, ys []float64) (d []float64) {
 	return
 }
 
-func testRF() {
+func buildRandomForests(hand int) {
 	start := time.Now()
-	f, _ := os.Open("right.learn")
+	f, _ := os.Open(fmt.Sprintf("%d.learn", hand))
 	defer f.Close()
 	content, _ := ioutil.ReadAll(f)
 	s_content := string(content)
@@ -220,9 +229,7 @@ func testRF() {
 	inputs := make([][]interface{}, 0)
 	targets := make([]string, 0)
 	for _, line := range lines {
-
 		line = strings.TrimRight(line, "\r\n")
-
 		if len(line) == 0 {
 			continue
 		}
@@ -262,9 +269,9 @@ func testRF() {
 
 	forest := RF.DefaultForest(inputs, targets, 100) //100 trees
 
-	RF.DumpForest(forest, "rf.bin")
+	RF.DumpForest(forest, fmt.Sprintf("%d.bin", hand))
 
-	forest = RF.LoadForest("rf.bin")
+	forest = RF.LoadForest(fmt.Sprintf("%d.bin", hand))
 
 	err_count := 0.0
 	for i := 0; i < len(test_inputs); i++ {
@@ -278,17 +285,21 @@ func testRF() {
 	fmt.Println("success rate:", 1.0-err_count/float64(len(test_inputs)))
 
 	fmt.Println(time.Since(start))
+}
 
+type Message struct {
+	Kind string `json:"kind"`
+	Ele  string `json:"ele"`
+	Data string `json:"data"`
 }
 
 // https://developers.google.com/static/mediapipe/images/solutions/hand-landmarks.png
-func processScore(p HandData) {
+func processScore(p HandData, c *websocket.Conn) {
 	// reduce frame rate a little bit
 	if rand.Float64() > float64(flagFrameRate)/100.0 {
 		return
 	}
 	for i, hand := range p.MultiHandLandmarks {
-		log.Debugf("len(hand)=%d", len(hand))
 		xs := make([]float64, len(hand))
 		ys := make([]float64, len(hand))
 		zs := make([]float64, len(hand))
@@ -300,6 +311,7 @@ func processScore(p HandData) {
 			zs[j] = coord.Z
 			ws[j] = 1.0
 		}
+		handedness := strings.ToLower(p.MultiHandedness[i].Label)
 		points := []int{0, 4, 8, 9, 12, 16, 20}
 		xgood := make([]float64, len(points))
 		ygood := make([]float64, len(points))
@@ -308,36 +320,40 @@ func processScore(p HandData) {
 			ygood[k] = ys[v]
 		}
 		dgood := distances(xgood, ygood)
-		handedness := strings.ToLower(p.MultiHandedness[i].Label)
 		if flagLearn != "" {
-			learnFileName := fmt.Sprintf("%s.learn", handedness)
+			learnFileName := fmt.Sprintf("%d.learn", lrName[handedness])
 			mutex.Lock()
-			defer mutex.Unlock()
+
 			file, err := os.OpenFile(learnFileName, os.O_APPEND|os.O_WRONLY, 0644)
 			if err != nil {
 				log.Error(err)
-				return
+				mutex.Unlock()
+				continue
 			}
-
 			for _, v := range dgood {
 				fmt.Fprintf(file, "%f,", v)
 			}
 			fmt.Fprintf(file, "%s\n", flagLearn)
 			file.Close()
-			return
+			log.Debugf("learning %s", handedness)
+			mutex.Unlock()
+			continue
 		}
-		if p.MultiHandedness[i].Label == "Right" {
-			test_inputs := make([]interface{}, 0)
-			for _, v := range dgood {
-				test_inputs = append(test_inputs, v)
-			}
-			output := rightForest.Predicate(test_inputs)
-			log.Debugf("prediction: %s", output)
-			// log.Debugf("x: %+v", xs)
-			// log.Debugf("y: %+v", ys)
-			// log.Debugf("distances: %+v", distances(xgood, ygood))
-			return
+		// predict hand formation
+		test_inputs := make([]interface{}, 0)
+		for _, v := range dgood {
+			test_inputs = append(test_inputs, v)
 		}
+		output := forest[lrName[handedness]].Predicate(test_inputs)
+		log.Debugf("%s prediction: %s", handedness, output)
+		mutex.Lock()
+		c.WriteJSON(Message{
+			"updateElement",
+			handedness, output,
+		})
+		mutex.Unlock()
+		continue
+
 		xsn := multiply(xs, 1)
 		ysn := multiply(ys, 1.0)
 		log.Debugf("maxDistance(ys): %f", maxDistance(ys))

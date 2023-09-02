@@ -6,7 +6,14 @@ const controls3d = window;
 // websocket in javascript
 var socket;
 const socketMessageListener = (e) => {
-    console.log(e.data);
+    let v = JSON.parse(e.data);
+    if (v == null) {
+        return;
+    }
+    if (v['kind'] == 'updateElement') {
+        console.log(v);
+        document.getElementById(v['ele']).innerText = v['data'];
+    }
 };
 const socketOpenListener = (e) => {
     console.log('Connected');

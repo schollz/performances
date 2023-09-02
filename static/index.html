@@ -1,6 +1,6 @@
 <!--
-    MediaPipe Hands
-    https://google.github.io/mediapipe/solutions/hands.html#javascript-solution-api
+MediaPipe Hands
+https://google.github.io/mediapipe/solutions/hands.html#javascript-solution-api
 -->
 <!DOCTYPE html>
 <html>
@@ -27,20 +27,38 @@
         position: absolute;
         right: 20px;
         top: 20px;
-      }
-  
-      .landmark-grid-container {
+        }
+        
+        .landmark-grid-container {
         height: 100%;
         width: 100%;
         position: absolute;
         top:0;
         left:0;
         background-color: #99999999;
-      }
-      .logo {
+        }
+        .logo {
         visibility: hidden;
-      }
-    </style>
+        }
+        .bottomright {
+        padding:1em;
+        background: #fff;
+        position: fixed;
+        font-size: 32px;
+        bottom: 0;
+        right: 0;
+        color: #000;
+        }
+        .bottomleft {
+        padding:1em;
+        background: #fff;
+        position: fixed;
+        font-size: 32px;
+        bottom: 0;
+        left: 0;
+        color: #000;
+        }
+        </style>
     <div class="container">
         <video class="input_video"></video>
         <canvas class="output_canvas" width="1280px" height="720px"></canvas>
@@ -53,7 +71,7 @@
         <a class="abs logo" href="http://www.mediapipe.dev" target="_blank">
             <div style="display: flex;align-items: center;bottom: 0;right: 10px;">
                 <img class="logo" src="./img/logo_white.png" alt="" style="
-            height: 50px;">
+                height: 50px;">
                 <span class="title">MediaPipe</span>
             </div>
         </a>
@@ -64,6 +82,8 @@
         <div class="landmark-grid-container">
         </div>
     </div>
+    <div id="left" class="bottomleft">Left</div>
+    <div id="right" class="bottomright">Right</div>
 </body>
 
 </html>
