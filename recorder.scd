@@ -4,17 +4,22 @@ s.waitForBoot({
 	var tempoBPM = 120;
 	var syn = Dictionary.new();
 	var bus = Dictionary.new();
+	var buf = Dictionary.new();
+	var par = Dictionary.new();
+
 	var measures = 0;
 	Routine {
 
 		// output effects
 		SynthDef("output",{
-			arg busIn, busOut;
+			arg busIn, busOut, db=0;
 			var snd;
 
 			snd = In.ar(busIn,2);
 
-			Out.ar(busOut,snd);
+			snd = snd * EnvGen.ar(Env.adsr(1,1,1,1));
+
+			Out.ar(busOut,snd * db.dbamp);
 		}).send(s);
 
 		SynthDef("input",{
