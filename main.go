@@ -31,6 +31,7 @@ var mutex sync.Mutex
 var static embed.FS
 var fsStatic http.Handler
 var forest [2]*RF.Forest
+var classifications [][]string
 
 var flagLearn string
 var flagFrameRate, flagOSCPort, flagPort int
@@ -43,6 +44,10 @@ func init() {
 	lrName = make(map[string]int)
 	lrName["left"] = 0
 	lrName["right"] = 1
+
+	classifications = make([][]string, 2)
+	classifications[0] = make([]string, 3)
+	classifications[1] = make([]string, 3)
 
 	ma = make(map[string][]*movingaverage.ConcurrentMovingAverage)
 	ma["Left"] = make([]*movingaverage.ConcurrentMovingAverage, 3)
@@ -267,7 +272,7 @@ func buildRandomForests(hand int) {
 		}
 	}
 
-	forest := RF.DefaultForest(inputs, targets, 100) //100 trees
+	forest := RF.DefaultForest(inputs, targets, 150) //100 trees
 
 	RF.DumpForest(forest, fmt.Sprintf("%d.bin", hand))
 
@@ -345,13 +350,18 @@ func processScore(p HandData, c *websocket.Conn) {
 			test_inputs = append(test_inputs, v)
 		}
 		output := forest[lrName[handedness]].Predicate(test_inputs)
+		classifications[lrName[handedness]][2] = classifications[lrName[handedness]][1]
+		classifications[lrName[handedness]][1] = classifications[lrName[handedness]][0]
+		classifications[lrName[handedness]][0] = output
 		log.Debugf("%s prediction: %s", handedness, output)
-		mutex.Lock()
-		c.WriteJSON(Message{
-			"updateElement",
-			handedness, output,
-		})
-		mutex.Unlock()
+		if classifications[lrName[handedness]][0] == classifications[lrName[handedness]][1] && classifications[lrName[handedness]][0] == classifications[lrName[handedness]][2] {
+			mutex.Lock()
+			c.WriteJSON(Message{
+				"updateElement",
+				handedness, output,
+			})
+			mutex.Unlock()
+		}
 		continue
 
 		xsn := multiply(xs, 1)
