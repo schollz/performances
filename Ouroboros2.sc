@@ -5,7 +5,9 @@ Ouroboros2 {
 	var buses;
 	var syns;
 	var oscs;
+	var primed;
 	var params;
+	var measures;
 
 	*new { arg argServer;
 		^super.new.init(argServer);
@@ -19,7 +21,6 @@ Ouroboros2 {
 				busOut: buses.at("main"),
 				busMetronome: buses.at("metronome"),
 			];
-			// update with current volumes, etc
 			if (params.at(id).notNil,{
 				params.at(id).keysValuesDo({ arg k, v;
 					args=args++[k,v];
@@ -37,6 +38,12 @@ Ouroboros2 {
 			}));
 			NodeWatcher.register(syns.at(id));
 		});
+	}
+
+	prime {
+		arg id, seconds;
+		["[ouro] primed",id,"to record for",seconds].postln;
+		primed.put(id,seconds);
 	}
 
 	record {
@@ -80,9 +87,14 @@ Ouroboros2 {
 		if (syns.at(name).isNil,{
 			^0
 		});
+		if (params.at(name).isNil,{
+			params.put(name,Dictionary.new());
+		});
+
 		if (syns.at(name).isRunning,{
 			["[ouro] set",name,k,v].postln;
 			syns.at(name).set(k,v);
+			params.at(name).put(k,v);
 		});
 	}
 
@@ -90,6 +102,7 @@ Ouroboros2 {
 		arg argServer;
 
 		server = argServer;
+		measures = 0;
 
 		// initialize variables
 		syns = Dictionary.new();
@@ -97,15 +110,23 @@ Ouroboros2 {
 		bufs = Dictionary.new();
 		oscs = Dictionary.new();
 		params = Dictionary.new();
+		primed = Dictionary.new();
 
 		// main output
 		SynthDef("main",{
-			arg busIn, busOut, db=0;
+			arg busIn, busOut, db=0, reverb=0;
 			var snd;
 
 			snd = In.ar(busIn,2);
 
 			snd = snd * EnvGen.ar(Env.adsr(1,1,1,1));
+
+			snd = SelectX.ar(Lag.kr(reverb,2),[snd,
+				Fverb.ar(snd[0],snd[1],200,
+					tail_density: LFNoise2.kr(1/3).range(50,90),
+					decay: LFNoise2.kr(1/3).range(50,90),
+				)
+			]);
 
 			Out.ar(busOut,snd * db.dbamp);
 		}).send(server);
@@ -138,25 +159,42 @@ Ouroboros2 {
 			arg busIn, buf, db=0;
 			var snd;
 			snd = In.ar(busIn,2);
-			snd = snd * EnvGen.ar(Env.adsr(0.1,1,1,1));
+			snd = snd * EnvGen.ar(Env.adsr(0.01,1,1,1));
 			RecordBuf.ar(snd, buf, loop: 0, doneAction: 2);
 			Out.ar(0,Silent.ar(2));
 		}).send(server);
 
 		SynthDef("looper",{
-			arg busMetronome, busOut, buf, db=0, gate=1;
+			arg busMetronome, busOut, buf, db=0, pan=0, gate=1;
 			var playhead, snd0, snd1, snd;
 			db = VarLag.kr(db,30,warp:\sine);
 			playhead = ToggleFF.kr(In.kr(busMetronome,1));
 			snd0 = PlayBuf.ar(2,buf,rate:BufRateScale.ir(buf),loop:1,trigger:1-playhead);
 			snd1 = PlayBuf.ar(2,buf,rate:BufRateScale.ir(buf),loop:1,trigger:playhead);
 			snd = SelectX.ar(VarLag.kr(playhead,1,warp:\sine),[snd0,snd1]);
+
+                        // random amplitude
+                        snd = snd * LFNoise2.kr(1/7).range(-12,3).dbamp;
+                        
+                        // random pan
+                        snd = Balance2.ar(snd[0],snd[1],pan + LFNoise2.kr(1/7,mul:0.25));
+
+                        // adsr
+                        snd = snd * EnvGen.ar(Env.adsr(1,1,1,3),gate:gate,doneAction:2);
+
 			Out.ar(busOut,snd*db.dbamp);
 		}).send(server);
 
 		// setup oscs
 		oscs.put("metronome",OSCFunc({ arg msg, time, addr, recvPort;
-			[msg, time, addr, recvPort].postln;
+			// [msg, time, addr, recvPort].postln;
+			measures = measures + 1;
+			["[ouro] measure",measures].postln;
+			primed.keysValuesDo({arg id,seconds;
+				["[ouro] recording primed",id,seconds].postln;
+				this.record(id,seconds);
+			});
+			primed=Dictionary.new();
 		}, '/metronome'));
 
 		server.sync;
