@@ -110,8 +110,6 @@ Miti {
 
 	setPhrase { arg argPhrase;
 		phraseNew = argPhrase.mod(phrasesMidi.size);
-		// phrase = phraseNew;
-		// line = measures.mod(phrasesMidi[phrase].size);
 	}
 
 	setCallbackNote { arg callback;

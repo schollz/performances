@@ -30,7 +30,7 @@ s.waitForBoot({
 		// 		var hand=msg[1];
 		// 		var gesture=msg[2];
 		// 		var x=msg[3].asFloat;
-		// 		var y=1.0-msg[4].asFloat;
+		// 		var y=msg[4].asFloat;
 		// 		[hand,gesture,x,y].postln;
 		// 	}, '/conductor');
 	}.play;
@@ -38,7 +38,9 @@ s.waitForBoot({
 )
 
 // c e g
-// a c e
+// b e g
+// b d g
+// f a c
 
 
 (
@@ -46,13 +48,19 @@ s.waitForBoot({
 	o=Ouroboros2.new(Server.default);
 
 	m=Miti.new(Server.default,240,"
-c c c c
-d d d d
-e e e e
-f f f f
+c4 b b c
+e4 e e g g g f e
+g4 g d a
 -
-c8 d e f g a# c8 d e f g a# c8 d e f g a# c8 d e f g a# c8 d e f g a# c8 d e f g a# c8 d e f g a# c8 d e f g a#
-
+g5 g g f
+e5 e d c
+c5 b b a
+-
+e6 e e d c c c
+c6 b b a
+g6 g g f
+-
+c4 e g c c4 e g c b4 e g f b4 e g f b d g a b d g g f a c a f a d a
 ");
 	m.setCallbackNote({ arg note;
 		["note",note].postln;
@@ -69,7 +77,7 @@ c8 d e f g a# c8 d e f g a# c8 d e f g a# c8 d e f g a# c8 d e f g a# c8 d e f g
 });
 )
 
-m.setPhrase(1)
+m.setPhrase(2)
 m.setPhrase(0)
 
 
