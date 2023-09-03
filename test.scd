@@ -62,6 +62,10 @@ c8 d e f g a# c8 d e f g a# c8 d e f g a# c8 d e f g a# c8 d e f g a# c8 d e f g
 		o.trig(measure);
 	});
 	m.start();
+	Routine {
+		1.1.wait;
+		o.prime("loop1",2);
+	}.play;
 });
 )
 
@@ -74,13 +78,4 @@ SerialPort.devices
 o.set("one","db",-12)
 o.free;
 
-(
-x={ arg i;
-	i.postln;
-};
-)
-
-c.(1,2)
-
-x.(2)
 

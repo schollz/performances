@@ -365,20 +365,20 @@ func processScore(p HandData, c *websocket.Conn) {
 		ma[p.MultiHandedness[i].Label][1].Add(meanY)
 
 		meanX = ma[p.MultiHandedness[i].Label][0].Avg()
-		meanY = ma[p.MultiHandedness[i].Label][1].Avg()
+		meanY = 1.0 - ma[p.MultiHandedness[i].Label][1].Avg()
 		// log.Debugf("%s: (%2.2f, %2.2f, %2.2f)", p.MultiHandedness[i].Label, meanX, meanY, meanZ)
 
 		if classifications[lrName[handedness]][0] == classifications[lrName[handedness]][1] && classifications[lrName[handedness]][0] == classifications[lrName[handedness]][2] {
 			classifyCurrent[lrName[handedness]] = output
-			mutex.Lock()
-			c.WriteJSON(Message{
-				"updateElement",
-				handedness, output,
-			})
-			mutex.Unlock()
 		}
 
 		if classifyCurrent[lrName[handedness]] != "" {
+			mutex.Lock()
+			c.WriteJSON(Message{
+				"updateElement",
+				handedness,
+				fmt.Sprintf("%s [%2.2f,%2.2f]", classifyCurrent[lrName[handedness]], meanX, meanY),
+			})
 			log.Debug("sending osc message", meanX, meanY)
 			msg := osc.NewMessage("/conductor")
 			msg.Append(handedness)
@@ -389,6 +389,7 @@ func processScore(p HandData, c *websocket.Conn) {
 			if cErr != nil {
 				log.Error(cErr)
 			}
+			mutex.Unlock()
 		}
 
 	}
