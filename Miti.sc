@@ -12,6 +12,7 @@ Miti {
 	var phrasesText;
 	var phrasesMidi;
 	var measures;
+	var dostop;
 
 	phraseToNotes {
 		arg p;
@@ -54,6 +55,7 @@ Miti {
 		line = 0;
 		index = 0;
 		measures = 0;
+		dostop = true;
 
 		server.sync;
 
@@ -72,11 +74,19 @@ Miti {
 		"ready".postln;
 	}
 
+	stop {
+		dostop = true;
+	}
+
 	start {
+		dostop = false;
 		callbackMeasure.(measures);
 		Routine {
-			inf.do({
+			while({ dostop.not },{
 				var l;
+				if (dostop,{
+					^0
+				});
 				if (phraseNew>1.neg,{
 					phrase = phraseNew;
 					line = measures.mod(phrasesMidi[phrase].size);

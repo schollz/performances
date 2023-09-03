@@ -42,3 +42,6 @@ c4 e g c c4 e g c b4 e g f b4 e g f b d g a b d g g f a c a f a d a
 
 });
 )
+
+// m.setPhrase(3)
+// m.stop()
