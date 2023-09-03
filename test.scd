@@ -37,6 +37,37 @@ s.waitForBoot({
 });
 )
 
+// c e g
+// a c e
+
+
+(
+s.waitForBoot({
+	m=Miti.new(Server.default,180,"
+c c c c
+d d d d
+e e e e
+f f f f
+-
+c c c c
+d d d d
+e e e e
+c8 d e f g a# c8 d e f g a# c8 d e f g a# c8 d e f g a#
+");
+	m.setCallbackNote({ arg note;
+			["note",note].postln;
+	});
+	m.setCallbackMeasure({ arg measure;
+			["measure",measure].postln;
+	});
+	m.start();
+});
+)
+
+m.setPhrase(1)
+m.setPhrase(0)
+
+
 SerialPort.devices
 
 o.set("one","db",-12)
