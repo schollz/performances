@@ -15,24 +15,24 @@ s.waitForBoot({
 		crow.(i+1,0);
 	});
 	Routine {
-	// 	// setup ouroboros
-	// 	o=Ouroboros2.new(Server.default);
-	// 	o.set("metronome","tempo",480);
-	// 	1.wait;
-	// 	o.prime("loop1",2);
-	// 	o.prime("loop2",3);
-	//
-	//
-	//
-	//
-	// 	OSCFunc({ arg msg, time, addr, recvPort;
-	// 		// [msg, time, addr, recvPort].postln;
-	// 		var hand=msg[1];
-	// 		var gesture=msg[2];
-	// 		var x=msg[3].asFloat;
-	// 		var y=1.0-msg[4].asFloat;
-	// 		[hand,gesture,x,y].postln;
-	// 	}, '/conductor');
+		// 	// setup ouroboros
+		// 	o=Ouroboros2.new(Server.default);
+		// 	o.set("metronome","tempo",480);
+		// 	1.wait;
+		// 	o.prime("loop1",2);
+		// 	o.prime("loop2",3);
+		//
+		//
+		//
+		//
+		// 	OSCFunc({ arg msg, time, addr, recvPort;
+		// 		// [msg, time, addr, recvPort].postln;
+		// 		var hand=msg[1];
+		// 		var gesture=msg[2];
+		// 		var x=msg[3].asFloat;
+		// 		var y=1.0-msg[4].asFloat;
+		// 		[hand,gesture,x,y].postln;
+		// 	}, '/conductor');
 	}.play;
 });
 )
@@ -43,22 +43,23 @@ s.waitForBoot({
 
 (
 s.waitForBoot({
-	m=Miti.new(Server.default,180,"
+	o=Ouroboros2.new(Server.default);
+
+	m=Miti.new(Server.default,240,"
 c c c c
 d d d d
 e e e e
 f f f f
 -
-c c c c
-d d d d
-e e e e
-c8 d e f g a# c8 d e f g a# c8 d e f g a# c8 d e f g a#
+c8 d e f g a# c8 d e f g a# c8 d e f g a# c8 d e f g a# c8 d e f g a# c8 d e f g a# c8 d e f g a# c8 d e f g a#
+
 ");
 	m.setCallbackNote({ arg note;
-			["note",note].postln;
+		["note",note].postln;
 	});
 	m.setCallbackMeasure({ arg measure;
-			["measure",measure].postln;
+		["measure",measure].postln;
+		o.trig(measure);
 	});
 	m.start();
 });

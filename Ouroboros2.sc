@@ -98,6 +98,11 @@ Ouroboros2 {
 		});
 	}
 
+	trig { arg argMeasures;
+		measures = argMeasures-1;
+		syns.at("metronome").set(\t_trig,1);
+	}
+
 	init {
 		arg argServer;
 
@@ -155,6 +160,14 @@ Ouroboros2 {
 			Out.kr(busOut,trig);
 		}).send(server);
 
+		SynthDef("metronomeManual",{
+			arg busOut, t_trig=0;
+			var trig;
+			// trig = Trig.kr(t_trig,0.02);
+			SendReply.kr(t_trig,"/metronome",1);
+			Out.kr(busOut,t_trig);
+		}).send(server);
+
 		SynthDef("recorder",{
 			arg busIn, buf, db=0;
 			var snd;
@@ -205,7 +218,7 @@ Ouroboros2 {
 		buses.put("main",Bus.audio(server,2));
 
 		// setup synths
-		syns.put("metronome",Synth.head(server,"metronome",[\tempo,120,\busOut,buses.at("metronome")]));
+		syns.put("metronome",Synth.head(server,"metronomeManual",[\tempo,120,\busOut,buses.at("metronome")]));
 		syns.put("main",Synth.tail(server,"main",[\busOut,0,\busIn,buses.at("main")]));
 		syns.keysValuesDo({ arg k, val;
 			NodeWatcher.register(val);

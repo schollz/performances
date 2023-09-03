@@ -76,7 +76,13 @@ Miti {
 		callbackMeasure.(measures);
 		Routine {
 			inf.do({
-				var l=phrasesMidi[phrase][line];
+				var l;
+				if (phraseNew>1.neg,{
+					phrase = phraseNew;
+					line = measures.mod(phrasesMidi[phrase].size);
+					phraseNew = -1;
+				});
+				l=phrasesMidi[phrase][line];
 				if (callbackNote.notNil,{
 					if (l[index].notNil,{
 						callbackNote.(l[index]);
@@ -86,13 +92,9 @@ Miti {
 				if (index>=l.size,{
 					index = 0;
 					measures = measures + 1;
-					if (phraseNew>1.neg,{
-						phrase = phraseNew;
-						phraseNew = -1;
-					});
 					line = measures.mod(phrasesMidi[phrase].size);
 				});
-				(4*60/tempo/l.size*4).wait;
+				(16*60/tempo/l.size).wait;
 				if (index==0,{
 					if (callbackMeasure.notNil,{
 						callbackMeasure.(measures);
@@ -108,9 +110,8 @@ Miti {
 
 	setPhrase { arg argPhrase;
 		phraseNew = argPhrase.mod(phrasesMidi.size);
-		// if 	(argPhrase < phrasesMidi.size,{
-		// 	phraseNew = argPhrase;
-		// })
+		// phrase = phraseNew;
+		// line = measures.mod(phrasesMidi[phrase].size);
 	}
 
 	setCallbackNote { arg callback;
