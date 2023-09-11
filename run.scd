@@ -1,34 +1,40 @@
 (
 s.waitForBoot({
+	var bpm = 360;
+	var doRecord = true;
+	var loopNum = 1;
 	o=Ouroboros2.new(Server.default);
 
-	m=Miti.new(Server.default,240,"
-c4 b b c
-e4 e e g g g f e
-g4 g d a
--
-g5 g g f
-e5 e d c
+	m=Miti.new(Server.default,bpm,"
+g3 g b f
 c5 b b a
+e4 e d d
 -
-e6 e e d c c c
-c6 b b a
-g6 g g f
+c2 e g d
 -
-c4 e g c c4 e g c b4 e g f b4 e g f b d g a b d g g f a c a f a d a
+g5 g b  a
+c6 b d  d
+e7 e g6 d6
 ");
 	m.setCallbackNote({ arg note;
 		["note",note].postln;
 	});
 	m.setCallbackMeasure({ arg measure;
 		["measure",measure].postln;
-		o.trig(measure);
+		if (doRecord,{
+			o.record("loop"++loopNum,16.0 * 60 / bpm);
+			loopNum = loopNum + 1;
+		});
+	});
+	m.setCallbackScore({
+		["callbackScore"].postln;
+		doRecord = false;
 	});
 	m.start();
-	Routine {
-		1.1.wait;
-		o.prime("loop1",2);
-	}.play;
+	//Routine {
+	//	1.1.wait;
+	//	o.prime("loop1",2);
+	//}.play;
 
 
 	OSCFunc({ arg msg, time, addr, recvPort;

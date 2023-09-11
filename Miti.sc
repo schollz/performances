@@ -4,6 +4,7 @@ Miti {
 	var mitiText;
 	var callbackNote;
 	var callbackMeasure;
+        var callbackScore;
 	var phrase;
 	var phraseNew;
 	var line;
@@ -100,9 +101,20 @@ Miti {
 				});
 				index = index + 1;
 				if (index>=l.size,{
+				        measures = measures + 1;
 					index = 0;
-					measures = measures + 1;
-					line = measures.mod(phrasesMidi[phrase].size);
+                                        line = line + 1;
+                                        if (line >= phrasesMidi[phrase].size,{
+                                          phrase = phrase + 1;
+                                          if (phrase >= phrasesMidi.size,{
+                                            phrase = 0;
+                                            if (callbackScore.notNil,{
+                                              callbackScore.();
+
+                                            });
+                                          });
+                                          line = 0;
+                                        });
 				});
 				(16*60/tempo/l.size).wait;
 				if (index==0,{
@@ -129,6 +141,10 @@ Miti {
 	setCallbackMeasure { arg callback;
 		callbackMeasure = callback;
 	}
+
+        setCallbackScore { arg callback;
+                callbackScore = callback;
+        }
 
 	free {
 	}
