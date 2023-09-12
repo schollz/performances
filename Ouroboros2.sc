@@ -133,7 +133,7 @@ Ouroboros2 {
 				)
 			]);
 
-			Out.ar(busOut,snd * db.dbamp);
+			Out.ar(busOut,snd * Lag.kr(db,30).dbamp);
 		}).send(server);
 
 		SynthDef("input",{

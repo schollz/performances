@@ -75,7 +75,8 @@ e7 d e g6 d d6 e
 });
 )
 
-o.set("main","reverb",0.5);
+o.set("main","reverb",0.9);
+o.set("main","db",64.neg);
 o.set("metronome","t_trig",1)
 
 // m.setPhrase(3)
