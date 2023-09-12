@@ -1,3 +1,34 @@
+
+(
+s.waitForBoot({
+	// crow stuff
+	p = SerialPort.new(
+		"/dev/ttyACM1",
+		baudrate: 115200
+	);
+	SynthDef("env1",{
+		arg port=2,attack=1,decay=1,sustain=0.5,release=1,gate=1;
+		var env = EnvGen.kr(Env.adsr(attack,decay,sustain,release),gate,10,doneAction:2);
+		SendReply.kr(Impulse.kr(10),"/env",[port,env]);
+	}).add;
+	OSCFunc({ arg msg, time, addr, recvPort;
+		// [msg, time, addr, recvPort].postln;
+		var port=msg[3].asInteger;
+		var env=msg[4].asFloat;
+		[port,env].postln;
+		p.putAll("output["++port++"].volts="++env++";\n");
+	}, '/env');
+});
+)
+
+
+x=Synth.new("env1",[attack:10]);
+x.set(\gate,0);
+p.putAll("output[2].slew=0.1;\n");
+p.putAll("output[2].volts=1;\n");
+
+
+
 (
 s.waitForBoot({
 	var bpm = 360;
