@@ -1,14 +1,22 @@
 
 (
 s.waitForBoot({
+	var bpm = 90;
+	var doRecord = true;
+	var loopNum = 1;
+	var crowSet = {
+		arg port, volts;
+		p.putAll("output["++port++"].volts="++volts++";\n");
+	};
 	// crow stuff
+
 	p = SerialPort.new(
 		"/dev/ttyACM1",
 		baudrate: 115200
 	);
 	SynthDef("env1",{
-		arg port=2,attack=1,decay=1,sustain=0.5,release=1,gate=1;
-		var env = EnvGen.kr(Env.adsr(attack,decay,sustain,release),gate,10,doneAction:2);
+		arg port=2,attack=1,decay=1,sustain=0.5,release=1,dur=1;
+		var env = EnvGen.kr(Env.adsr(attack,decay,sustain,release),EnvGen.kr(Env.new([0,0,1],[dur,0.1])),10,doneAction:2);
 		SendReply.kr(Impulse.kr(10),"/env",[port,env]);
 	}).add;
 	OSCFunc({ arg msg, time, addr, recvPort;
@@ -16,24 +24,10 @@ s.waitForBoot({
 		var port=msg[3].asInteger;
 		var env=msg[4].asFloat;
 		[port,env].postln;
-		p.putAll("output["++port++"].volts="++env++";\n");
+		crowSet.(port,env);
 	}, '/env');
-});
-)
 
 
-x=Synth.new("env1",[attack:10]);
-x.set(\gate,0);
-p.putAll("output[2].slew=0.1;\n");
-p.putAll("output[2].volts=1;\n");
-
-
-
-(
-s.waitForBoot({
-	var bpm = 360;
-	var doRecord = true;
-	var loopNum = 1;
 	o=Ouroboros2.new(Server.default);
 
 	m=Miti.new(Server.default,bpm,"
@@ -41,14 +35,16 @@ g3 g b f
 c5 b b a
 e4 e d d
 -
-c2 e g d
+c2 d e e g e d d
 -
-g5 g b  a
+g6 g b  a
 c6 b d  d
-e7 e g6 d6
+e7 d e g6 d d6 e
+
 ");
 	m.setCallbackNote({ arg note;
 		["note",note].postln;
+		crowSet.(1,(note-36)/12);
 	});
 	m.setCallbackMeasure({ arg measure;
 		["measure",measure].postln;
@@ -56,16 +52,15 @@ e7 e g6 d6
 			o.record("loop"++loopNum,16.0 * 60 / bpm);
 			loopNum = loopNum + 1;
 		});
+		o.set("metronome","t_trig",1)
 	});
 	m.setCallbackScore({
 		["callbackScore"].postln;
 		doRecord = false;
+
 	});
 	m.start();
-	//Routine {
-	//	1.1.wait;
-	//	o.prime("loop1",2);
-	//}.play;
+
 
 
 	OSCFunc({ arg msg, time, addr, recvPort;
@@ -80,5 +75,10 @@ e7 e g6 d6
 });
 )
 
+o.set("main","reverb",0.5);
+o.set("metronome","t_trig",1)
+
 // m.setPhrase(3)
 // m.stop()
+
+// o.bufs.at("loop1").plot;

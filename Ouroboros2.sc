@@ -1,7 +1,7 @@
 Ouroboros2 {
 
 	var server;
-	var bufs;
+	var <bufs;
 	var buses;
 	var syns;
 	var oscs;
@@ -26,15 +26,15 @@ Ouroboros2 {
 					args=args++[k,v];
 				});
 			});
-			["[ouro] play args:",args].postln;
+			["[ouro]",id,"play args:",args].postln;
 
 			if (syns.at(id).notNil,{
-				["[ouro] sending done to loop",id].postln;
+				["[ouro]",id,"sending done to loop",id].postln;
 				syns.at(id).set(\done,1);
 			});
-			["[ouro] started playing loop",id].postln;
+			["[ouro]",id,"started playing loop",id].postln;
 			syns.put(id,Synth.after(syns.at("metronome"),"looper",args).onFree({
-				["[ouro] stopped playing loop",id].postln;
+				["[ouro]",id,"stopped playing loop",id].postln;
 			}));
 			NodeWatcher.register(syns.at(id));
 		});
@@ -126,7 +126,7 @@ Ouroboros2 {
 
 			snd = snd * EnvGen.ar(Env.adsr(1,1,1,1));
 
-			snd = SelectX.ar(Lag.kr(reverb,2),[snd,
+			snd = SelectX.ar(Lag.kr(reverb,10),[snd,
 				Fverb.ar(snd[0],snd[1],200,
 					tail_density: LFNoise2.kr(1/3).range(50,90),
 					decay: LFNoise2.kr(1/3).range(50,90),
@@ -171,8 +171,9 @@ Ouroboros2 {
 		SynthDef("recorder",{
 			arg busIn, buf, db=0;
 			var snd;
-			snd = In.ar(busIn,2);
-			snd = snd * EnvGen.ar(Env.adsr(0.01,1,1,1));
+			// snd = In.ar(busIn,2);
+			snd = SoundIn.ar([0,1]);
+			snd = snd * EnvGen.ar(Env.adsr(1,1,1,1));
 			RecordBuf.ar(snd, buf, loop: 0, doneAction: 2);
 			Out.ar(0,Silent.ar(2));
 		}).send(server);
@@ -180,20 +181,23 @@ Ouroboros2 {
 		SynthDef("looper",{
 			arg busMetronome, busOut, buf, db=0, pan=0, gate=1;
 			var playhead, snd0, snd1, snd;
+			var tr=In.kr(busMetronome,1);
 			db = VarLag.kr(db,30,warp:\sine);
-			playhead = ToggleFF.kr(In.kr(busMetronome,1));
+			playhead = ToggleFF.kr(tr);
 			snd0 = PlayBuf.ar(2,buf,rate:BufRateScale.ir(buf),loop:1,trigger:1-playhead);
 			snd1 = PlayBuf.ar(2,buf,rate:BufRateScale.ir(buf),loop:1,trigger:playhead);
-			snd = SelectX.ar(VarLag.kr(playhead,1,warp:\sine),[snd0,snd1]);
+			snd = SelectX.ar(Lag.kr(playhead,1.9),[snd0,snd1]);
 
-                        // random amplitude
-                        snd = snd * LFNoise2.kr(1/7).range(-12,3).dbamp;
-                        
-                        // random pan
-                        snd = Balance2.ar(snd[0],snd[1],pan + LFNoise2.kr(1/7,mul:0.25));
+			// random amplitude
+			snd = snd * SinOsc.kr(1.0/Rand(5,11)).range(-12,3).dbamp;
 
-                        // adsr
-                        snd = snd * EnvGen.ar(Env.adsr(1,1,1,3),gate:gate,doneAction:2);
+			// random pan
+			snd = Balance2.ar(snd[0],snd[1],pan + SinOsc.kr(1/Rand(5,11),mul:0.5));
+
+			// adsr
+			snd = snd * EnvGen.ar(Env.adsr(1,1,1,3),gate:gate,doneAction:2);
+
+			SendReply.kr(Changed.kr(playhead),"/playhead",[buf]);
 
 			Out.ar(busOut,snd*db.dbamp);
 		}).send(server);
@@ -209,6 +213,10 @@ Ouroboros2 {
 			});
 			primed=Dictionary.new();
 		}, '/metronome'));
+		// setup playhead listener
+		oscs.put("playhead",OSCFunc({ arg msg, time, addr, recvPort;
+			[msg, time, addr, recvPort].postln;
+		}, '/playhead'));
 
 		server.sync;
 
@@ -244,3 +252,5 @@ Ouroboros2 {
 		});
 	}
 }
+
+
