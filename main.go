@@ -325,6 +325,12 @@ func processScore(p HandData, c *websocket.Conn) {
 		xgood := make([]float64, len(points))
 		ygood := make([]float64, len(points))
 		for k, v := range points {
+			if len(xs) < v {
+				return
+			}
+			if len(xs) == 0 {
+				return
+			}
 			xgood[k] = xs[v]
 			ygood[k] = ys[v]
 		}
