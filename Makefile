@@ -21,3 +21,9 @@ links:
 
 stop:
 	pkill -f sclang
+
+perform: startjack
+	./conductor &
+
+startjack:
+	jackd -R -P 95 -d alsa -P hw:5 -C hw:5
