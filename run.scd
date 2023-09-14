@@ -5,7 +5,7 @@ s.waitForBoot({
 	var recCount = 0;
 	var doRecord = true;
 	var loopNum = 0;
-	var loopNumMax = 6;
+	var loopNumMax = 8;
 	var scale=Array.new;
 	var cscale=Scale.major.degrees;
 	2.do({ arg octave;
