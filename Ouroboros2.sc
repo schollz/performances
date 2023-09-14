@@ -201,7 +201,7 @@ Ouroboros2 {
 			snd = Balance2.ar(snd[0],snd[1],pan + SinOsc.kr(1/Rand(5,11),mul:1));
 
 			// adsr
-			snd = snd * EnvGen.ar(Env.adsr(1,1,1,3),gate:gate,doneAction:2);
+			snd = snd * EnvGen.ar(Env.adsr(2,1,1,10),gate:gate,doneAction:2);
 
 			SendReply.kr(Changed.kr(playhead),"/playhead",[buf]);
 
