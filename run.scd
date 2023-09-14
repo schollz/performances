@@ -151,25 +151,20 @@ c6 c6 e6 b5
 });
 )
 
-0.5.linlin(0,1,0,10)
+// 0.5.linlin(0,1,0,10)
+//
+// s.show
+//
+// o.set("main","reverb",0.5);
+// o.set("main","reverb",0);
+// o.set("main","db",64.neg);
+// o.set("metronome","t_trig",1)
+//
+// o.set("loop1","gate",0);
+// o.set("loop2","gate",0);
+// o.set("loop3","gate",0);
+// o.set("loop4","gate",0);
+// o.set("loop5","gate",0);
+//
+// ~crowSet.(1,(74-36)/12);
 
-s.show
-
-o.set("main","reverb",0.5);
-o.set("main","reverb",0);
-o.set("main","db",64.neg);
-o.set("metronome","t_trig",1)
-
-o.set("loop1","gate",0);
-o.set("loop2","gate",0);
-o.set("loop3","gate",0);
-o.set("loop4","gate",0);
-o.set("loop5","gate",0);
-
-~crowSet.(1,(74-36)/12);
-
-
-// m.setPhrase(3)
-// m.stop()
-
-// o.bufs.at("loop1").plot;
