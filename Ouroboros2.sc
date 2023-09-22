@@ -1,7 +1,7 @@
 Ouroboros2 {
 
 	var server;
-	var bufs;
+	var <bufs;
 	var buses;
 	var syns;
 	var oscs;
@@ -36,6 +36,7 @@ Ouroboros2 {
 						buf: bufs.at(id),
 						busOut: buses.at("main"),
 						busMetronome: buses.at("metronome"),
+						busCount: buses.at("count"),
 						bufDisk: bdisk,
 					];
 					if (params.at(id).notNil,{
@@ -115,7 +116,7 @@ Ouroboros2 {
 		});
 
 		if (syns.at(name).isRunning,{
-			["[ouro] set",name,k,v].postln;
+			//["[ouro] set",name,k,v].postln;
 			syns.at(name).set(k,v);
 			params.at(name).put(k,v);
 		});
@@ -142,21 +143,26 @@ Ouroboros2 {
 
 		// main output
 		SynthDef("main",{
-			arg busIn, busOut, db=0, reverb=0;
+			arg busIn, busOut, busCount, db=0, reverb=0;
 			var snd;
-
+			var count;
+			count = Clip.kr(In.kr(busCount,1)/5,1,30);
 			snd = In.ar(busIn,2);
 
-			snd = snd * EnvGen.ar(Env.adsr(1,1,1,1));
+			snd = (snd/count) + LPF.ar(SoundIn.ar([0,1]),19000);
 
-			snd = SelectX.ar(Lag.kr(reverb,2),[snd,
+			snd = snd * EnvGen.ar(Env.adsr(10,1,1,1));
+
+			snd = AnalogTape.ar(snd,0.9,0.9,0.7,2);
+
+			snd = SelectX.ar(Lag.kr(reverb,1),[snd,
 				Fverb.ar(snd[0],snd[1],200,
 					tail_density: LFNoise2.kr(1/3).range(50,90),
 					decay: LFNoise2.kr(1/3).range(50,90),
 				)
 			]);
 
-			Out.ar(busOut,snd * db.dbamp);
+			Out.ar(busOut,snd * Lag.kr(db,30).dbamp);
 		}).send(server);
 
 		SynthDef("input",{
@@ -208,24 +214,28 @@ Ouroboros2 {
 		}).send(server);
 
 		SynthDef("looper",{
-			arg busMetronome, busOut, buf, db=0, pan=0, gate=1, bufDisk;
+			arg busMetronome, busOut, busCount, buf, db=0, pan=0, gate=1, bufDisk;
 			var playhead, snd0, snd1, snd;
+			var tr=In.kr(busMetronome,1);
 			db = VarLag.kr(db,30,warp:\sine);
-			playhead = ToggleFF.kr(In.kr(busMetronome,1));
+			playhead = ToggleFF.kr(tr);
 			snd0 = PlayBuf.ar(2,buf,rate:BufRateScale.ir(buf),loop:1,trigger:1-playhead);
 			snd1 = PlayBuf.ar(2,buf,rate:BufRateScale.ir(buf),loop:1,trigger:playhead);
-			snd = SelectX.ar(VarLag.kr(playhead,1,warp:\sine),[snd0,snd1]);
+			snd = SelectX.ar(VarLag.kr(playhead,1.0,warp:\linear),[snd0,snd1]);
 
-                        // random amplitude
-                        snd = snd * LFNoise2.kr(1/7).range(-12,3).dbamp;
-                        
-                        // random pan
-                        snd = Balance2.ar(snd[0],snd[1],pan + LFNoise2.kr(1/7,mul:0.25));
+			// random amplitude
+			snd = snd * SinOsc.kr(1.0/Rand(5,11)).range(9.neg,3).dbamp;
 
-                        // adsr
-                        snd = snd * EnvGen.ar(Env.adsr(1,1,1,3),gate:gate,doneAction:2);
+			// random pan
+			snd = Balance2.ar(snd[0],snd[1],pan + SinOsc.kr(1/Rand(5,11),mul:1));
 
             DiskOut.ar(bufDisk, snd * db.dbamp);
+			// adsr
+			snd = snd * EnvGen.ar(Env.adsr(2,1,1,10),gate:gate,doneAction:2);
+
+			SendReply.kr(Changed.kr(playhead),"/playhead",[buf]);
+
+			Out.kr(busCount,DC.kr(1));
 			Out.ar(busOut,snd*db.dbamp);
 		}).send(server);
 
@@ -240,6 +250,10 @@ Ouroboros2 {
 			});
 			primed=Dictionary.new();
 		}, '/metronome'));
+		// setup playhead listener
+		oscs.put("playhead",OSCFunc({ arg msg, time, addr, recvPort;
+			[msg, time, addr, recvPort].postln;
+		}, '/playhead'));
 
 		server.sync;
 
@@ -248,6 +262,7 @@ Ouroboros2 {
 		buses.put("record",Bus.audio(server,2));
 		buses.put("metronome",Bus.control(server,1));
 		buses.put("main",Bus.audio(server,2));
+		buses.put("count",Bus.control(server,1));
 
 		// setup synths
 		syns.put("metronome",Synth.head(server,"metronomeManual",[\tempo,120,\busOut,buses.at("metronome")]));
@@ -255,7 +270,9 @@ Ouroboros2 {
 		syns.put("input",Synth.head(syns.at("main"),"input",[
 			busOut: buses.at("main"),
 			busRecord: buses.at("record"),
+			busCount: buses.at("count"),
 		]));
+
 		syns.keysValuesDo({ arg k, val;
 			NodeWatcher.register(val);
 		});
@@ -287,3 +304,5 @@ Ouroboros2 {
 		});
 	}
 }
+
+

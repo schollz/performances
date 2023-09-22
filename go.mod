@@ -12,4 +12,4 @@ require (
 	gonum.org/v1/gonum v0.14.0
 )
 
-require golang.org/x/sys v0.0.0-20210616045830-e2b7044e8c71 // indirect
+require golang.org/x/sys v0.12.0 // indirect

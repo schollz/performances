@@ -4,7 +4,7 @@ Miti {
 	var mitiText;
 	var callbackNote;
 	var callbackMeasure;
-        var callbackScore;
+	var callbackScore;
 	var phrase;
 	var phraseNew;
 	var line;
@@ -28,11 +28,14 @@ Miti {
 				parts.do { |part,i|
 					var note, octave;
 					note="c#d#ef#g#a#b".indexOf(part[0]);
-					octave=part[1].asString.asInteger;
-					if (octave==0,{ octave = lastOctave; });
-					lastOctave = octave;
-					note=note+(12*octave);
-					notes.insert(i,note);
+					if (note.notNil,{
+						octave=part[1].asString.asInteger;
+						if (octave==0,{ octave = lastOctave; });
+						lastOctave = octave;
+						note=note+(12*octave);
+						notes.insert(i,note);
+
+					});
 				};
 				phraseNoteArray = phraseNoteArray.add(notes);
 			};
@@ -69,7 +72,6 @@ Miti {
 			midis = this.phraseToNotes(phrasesText[i]);
 			midis.postln;
 			phrasesMidi = phrasesMidi.add(midis);
-
 		});
 		phrasesMidi.postln;
 		"ready".postln;
@@ -101,20 +103,20 @@ Miti {
 				});
 				index = index + 1;
 				if (index>=l.size,{
-				        measures = measures + 1;
+					measures = measures + 1;
 					index = 0;
-                                        line = line + 1;
-                                        if (line >= phrasesMidi[phrase].size,{
-                                          phrase = phrase + 1;
-                                          if (phrase >= phrasesMidi.size,{
-                                            phrase = 0;
-                                            if (callbackScore.notNil,{
-                                              callbackScore.();
+					line = line + 1;
+					if (line >= phrasesMidi[phrase].size,{
+						phrase = phrase + 1;
+						if (phrase >= phrasesMidi.size,{
+							phrase = 0;
+							if (callbackScore.notNil,{
+								callbackScore.();
 
-                                            });
-                                          });
-                                          line = 0;
-                                        });
+							});
+						});
+						line = 0;
+					});
 				});
 				(16*60/tempo/l.size).wait;
 				if (index==0,{
@@ -142,9 +144,9 @@ Miti {
 		callbackMeasure = callback;
 	}
 
-        setCallbackScore { arg callback;
-                callbackScore = callback;
-        }
+	setCallbackScore { arg callback;
+		callbackScore = callback;
+	}
 
 	free {
 	}
