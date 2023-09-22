@@ -88,8 +88,9 @@ Ouroboros2 {
 		Buffer.alloc(server,seconds*server.sampleRate,2,completionMessage:{ arg buf;
 			bufs.put(id,buf);
 			["[ouro] started recording loop",id].postln;
-			syns.put("record"++id,Synth.head(server,"recorder",[
+			syns.put("record"++id,Synth.after(syns.at("input"),"recorder",[
 				id: id,
+				busIn: buses.at("input"),
 				buf: buf,
 			]).onFree({
 				["[ouro] finished recording loop",id].postln;
@@ -159,15 +160,23 @@ Ouroboros2 {
 		}).send(server);
 
 		SynthDef("input",{
-			arg busOut,lpf=135;
+			arg busOut,busRecord,lpf=135;
 			var snd;
 
 			snd = SoundIn.ar([0,1]);
+
+			// filter the input baesd on bandpass filter around the detected pitch
+			# freq, hasFreq = Pitch.kr(Mix.new(snd), ampThreshold: 0.02, median: 7);
+			incomingFreq = Lag.kr(Latch.kr(freq,hasFreq),3);
+			snd = BPF.ar(snd, incomingFreq, 1);
+			// TODO add other bpf harmonics?
 
 			lpf = Clip.kr(lpf,20,135);
 
 			snd = RLPF.ar(snd,lpf.midicps,0.707);
 
+
+			Out.ar(busRecord,snd);
 			Out.ar(busOut,snd);
 		}).send(server);
 
@@ -192,10 +201,9 @@ Ouroboros2 {
 
 		SynthDef("recorder",{
 			arg busIn, buf, db=0;
-			var snd;
+			var snd, freq, hasFreq, incomingFreq;
 			snd = In.ar(busIn,2);
 			snd = snd * EnvGen.ar(Env.adsr(0.01,1,1,1));
-			RecordBuf.ar(snd, buf, loop: 0, doneAction: 2);
 			Out.ar(0,Silent.ar(2));
 		}).send(server);
 
@@ -237,12 +245,17 @@ Ouroboros2 {
 
 		// setup buses
 		buses.put("input",Bus.audio(server,2));
+		buses.put("record",Bus.audio(server,2));
 		buses.put("metronome",Bus.control(server,1));
 		buses.put("main",Bus.audio(server,2));
 
 		// setup synths
 		syns.put("metronome",Synth.head(server,"metronomeManual",[\tempo,120,\busOut,buses.at("metronome")]));
 		syns.put("main",Synth.tail(server,"main",[\busOut,0,\busIn,buses.at("main")]));
+		syns.put("input",Synth.head(syns.at("main"),"input",[
+			busOut: buses.at("main"),
+			busRecord: buses.at("record"),
+		]));
 		syns.keysValuesDo({ arg k, val;
 			NodeWatcher.register(val);
 		});
