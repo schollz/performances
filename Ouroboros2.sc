@@ -8,6 +8,7 @@ Ouroboros2 {
 	var primed;
 	var params;
 	var measures;
+	var saveDir;
 
 	*new { arg argServer;
 		^super.new.init(argServer);
@@ -16,27 +17,48 @@ Ouroboros2 {
 	play {
 		arg id;
 		if (bufs.at(id).notNil,{
-			var args=[
-				buf: bufs.at(id),
-				busOut: buses.at("main"),
-				busMetronome: buses.at("metronome"),
-			];
-			if (params.at(id).notNil,{
-				params.at(id).keysValuesDo({ arg k, v;
-					args=args++[k,v];
-				});
-			});
-			["[ouro] play args:",args].postln;
+			Routine {
+				var bufdisk = Buffer.alloc(server,65536, 2);
+				var filename = saveDir++"/loop_"++id++"_1";
+				filename = filename.asString.standardizePath;
+				while { File.exists(filename ++ ".wav") } {
+					filename = PathName(filename).nextName;
+					filename = filename.asString.standardizePath;
+				};
+				filename = filename ++".wav";
 
-			if (syns.at(id).notNil,{
-				["[ouro] sending done to loop",id].postln;
-				syns.at(id).set(\done,1);
-			});
-			["[ouro] started playing loop",id].postln;
-			syns.put(id,Synth.after(syns.at("metronome"),"looper",args).onFree({
-				["[ouro] stopped playing loop",id].postln;
-			}));
-			NodeWatcher.register(syns.at(id));
+				server.sync;
+				bufdisk.postln;
+				["[ouro] loop saving to file: "++filename].postln;
+				bufdisk.write(filename.standardizePath, "wav", "int16", 0, 0, true,{
+					arg bdisk;
+					var args=[
+						buf: bufs.at(id),
+						busOut: buses.at("main"),
+						busMetronome: buses.at("metronome"),
+						bufDisk: bdisk,
+					];
+					if (params.at(id).notNil,{
+						params.at(id).keysValuesDo({ arg k, v;
+							args=args++[k,v];
+						});
+					});
+					["[ouro] play args:",args].postln;
+
+					if (syns.at(id).notNil,{
+						["[ouro] sending done to loop",id].postln;
+						syns.at(id).set(\done,1);
+					});
+					["[ouro] started playing loop",id].postln;
+					syns.put(id,Synth.after(syns.at("metronome"),"looper",args).onFree({
+						["[ouro] stopped playing loop",id].postln;
+						// close the buffer for the written file
+						bdisk.close;
+						bdisk.free;
+					}));
+					NodeWatcher.register(syns.at(id));
+				});
+			}.play;
 		});
 	}
 
@@ -178,7 +200,7 @@ Ouroboros2 {
 		}).send(server);
 
 		SynthDef("looper",{
-			arg busMetronome, busOut, buf, db=0, pan=0, gate=1;
+			arg busMetronome, busOut, buf, db=0, pan=0, gate=1, bufDisk;
 			var playhead, snd0, snd1, snd;
 			db = VarLag.kr(db,30,warp:\sine);
 			playhead = ToggleFF.kr(In.kr(busMetronome,1));
@@ -195,6 +217,7 @@ Ouroboros2 {
                         // adsr
                         snd = snd * EnvGen.ar(Env.adsr(1,1,1,3),gate:gate,doneAction:2);
 
+            DiskOut.ar(bufDisk, snd * db.dbamp);
 			Out.ar(busOut,snd*db.dbamp);
 		}).send(server);
 
@@ -223,6 +246,13 @@ Ouroboros2 {
 		syns.keysValuesDo({ arg k, val;
 			NodeWatcher.register(val);
 		});
+
+		// create ouroborous directory for saving recordings
+		saveDir = Platform.userAppSupportDir ++ "/ouroboros/" ++ Date.getDate.stamp;
+		File.mkdir(saveDir);
+		// ("mkdir -p "++saveDir).unixCmdGetStdOut;
+		"[ouro] saving data to".postln;
+		saveDir.postln;
 
 		server.sync;
 		"ready".postln;
