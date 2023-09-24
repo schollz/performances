@@ -48,10 +48,10 @@ Ouroboros2 {
 
 					if (syns.at(id).notNil,{
 						["[ouro] sending done to loop",id].postln;
-						syns.at(id).set(\done,1);
+						syns.at(id).set(\gate,0);
 					});
 					["[ouro] started playing loop",id].postln;
-					syns.put(id,Synth.after(syns.at("metronome"),"looper",args).onFree({
+					syns.put(id,Synth.after(syns.at("metronome"),"looperAudio",args).onFree({
 						["[ouro] stopped playing loop",id].postln;
 						// close the buffer for the written file
 						bdisk.close;
@@ -59,6 +59,34 @@ Ouroboros2 {
 					}));
 					NodeWatcher.register(syns.at(id));
 				});
+			}.play;
+		});
+	}
+
+
+	playCV {
+		arg id;
+		if (bufs.at(id).notNil,{
+			Routine {
+				var args=[
+					buf: bufs.at(id),
+					busMetronome: buses.at("metronome"),
+				];
+				if (params.at(id).notNil,{
+					params.at(id).keysValuesDo({ arg k, v;
+						args=args++[k,v];
+					});
+				});
+				["[ouro] play args:",args].postln;
+				if (syns.at(id).notNil,{
+					["[ouro] sending done to loop",id].postln;
+					syns.at(id).set(\gate,0);
+				});
+				["[ouro] started playing loop",id].postln;
+				syns.put(id,Synth.after(syns.at("metronome"),"looperCV",args).onFree({
+					["[ouro] stopped playing loop",id].postln;
+				}));
+				NodeWatcher.register(syns.at(id));
 			}.play;
 		});
 	}
@@ -89,7 +117,44 @@ Ouroboros2 {
 		Buffer.alloc(server,seconds*server.sampleRate,2,completionMessage:{ arg buf;
 			bufs.put(id,buf);
 			["[ouro] started recording loop",id].postln;
-			syns.put("record"++id,Synth.after(syns.at("input"),"recorder",[
+			syns.put("record"++id,Synth.after(syns.at("input"),"recorderAudio",[
+				id: id,
+				busIn: buses.at("input"),
+				buf: buf,
+			]).onFree({
+				["[ouro] finished recording loop",id].postln;
+				// buf.write(filename,headerFormat: "wav", sampleFormat: "int16",numFrames:seconds*server.sampleRate,completionMessage:{
+				// 	["[ouro] finished writing",filename].postln;
+				// 	Routine{
+				// 		1.wait;
+				// 		NetAddr("127.0.0.1", 10111).sendMsg("recorded",msg[1],msg[3],filename);
+				// 	}.play;
+				// });
+			}));
+		});
+	}
+
+	recordCV {
+		arg id, seconds;
+		var xfade = 2.0;
+		seconds = seconds.asFloat + 2.0;
+
+		// initiate a routine to automatically start playing loop
+		Routine {
+			(seconds-2).wait;
+			if (syns.at(id).notNil,{
+				if (syns.at(id).isRunning,{
+					syns.at(id).set(\gate,0);
+				});
+			});
+			this.play(id);
+		}.play;
+
+		// allocate buffer and record the loop
+		Buffer.alloc(server,seconds*server.sampleRate,1,completionMessage:{ arg buf;
+			bufs.put(id,buf);
+			["[ouro] started recording loop",id].postln;
+			syns.put("record"++id,Synth.after(syns.at("input"),"recorderAudio",[
 				id: id,
 				busIn: buses.at("input"),
 				buf: buf,
@@ -167,7 +232,7 @@ Ouroboros2 {
 
 		SynthDef("input",{
 			arg busOut,busRecord,lpf=135;
-			var snd;
+			var snd, incomingFreq, hasFreq, freq;
 
 			snd = SoundIn.ar([0,1]);
 
@@ -205,15 +270,22 @@ Ouroboros2 {
 			Out.kr(busOut,t_trig);
 		}).send(server);
 
-		SynthDef("recorder",{
+		SynthDef("recorderAudio",{
 			arg busIn, buf, db=0;
-			var snd, freq, hasFreq, incomingFreq;
+			var snd;
 			snd = In.ar(busIn,2);
 			snd = snd * EnvGen.ar(Env.adsr(0.01,1,1,1));
+			RecordBuf.ar(snd, buf, loop: 0, doneAction: 2);
 			Out.ar(0,Silent.ar(2));
 		}).send(server);
 
-		SynthDef("looper",{
+		SynthDef("recorderCV",{
+			arg busIn, buf, db=0;
+			var cv;
+			RecordBuf.kr(In.ar(busIn,1), buf, loop: 0, doneAction: 2);
+		}).send(server);
+
+		SynthDef("looperAudio",{
 			arg busMetronome, busOut, busCount, buf, db=0, pan=0, gate=1, bufDisk;
 			var playhead, snd0, snd1, snd;
 			var tr=In.kr(busMetronome,1);
@@ -239,6 +311,19 @@ Ouroboros2 {
 			Out.ar(busOut,snd*db.dbamp);
 		}).send(server);
 
+
+		SynthDef("looperCV",{
+			arg id=0,busMetronome, buf, gate=1;
+			var playhead, snd0, snd1, snd;
+			var tr=In.kr(busMetronome,1);
+			playhead = ToggleFF.kr(tr);
+			snd0 = PlayBuf.kr(1,buf,rate:BufRateScale.ir(buf),loop:1,trigger:1-playhead);
+			snd1 = PlayBuf.kr(1,buf,rate:BufRateScale.ir(buf),loop:1,trigger:playhead);
+			snd = SelectX.kr(VarLag.kr(playhead,1.0,warp:\linear),[snd0,snd1]);
+			snd = snd * EnvGen.ar(Env.adsr(0.22,1,1,10),gate:gate,doneAction:2);
+			SendReply.kr(Impulse.kr(10),"/cv",[id,snd]);
+		}).send(server);
+
 		// setup oscs
 		oscs.put("metronome",OSCFunc({ arg msg, time, addr, recvPort;
 			// [msg, time, addr, recvPort].postln;
@@ -254,6 +339,9 @@ Ouroboros2 {
 		oscs.put("playhead",OSCFunc({ arg msg, time, addr, recvPort;
 			[msg, time, addr, recvPort].postln;
 		}, '/playhead'));
+		oscs.put("cv",OSCFunc({ arg msg, time, addr, recvPort;
+			[msg, time, addr, recvPort].postln;
+		}, '/cv'));
 
 		server.sync;
 
