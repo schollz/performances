@@ -154,9 +154,8 @@ Ouroboros2 {
 		Buffer.alloc(server,seconds*server.sampleRate,1,completionMessage:{ arg buf;
 			bufs.put(id,buf);
 			["[ouro] started recording loop",id].postln;
-			syns.put("record"++id,Synth.after(syns.at("input"),"recorderAudio",[
+			syns.put("record"++id,Synth.after(syns.at("input"),"recorderCV",[
 				id: id,
-				busIn: buses.at("input"),
 				buf: buf,
 			]).onFree({
 				["[ouro] finished recording loop",id].postln;
@@ -280,9 +279,8 @@ Ouroboros2 {
 		}).send(server);
 
 		SynthDef("recorderCV",{
-			arg busIn, buf, db=0;
-			var cv;
-			RecordBuf.kr(In.ar(busIn,1), buf, loop: 0, doneAction: 2);
+			arg busIn, buf, db=0, data=0;
+			RecordBuf.ar(Lag.ar(data,2), buf, loop: 0, doneAction: 2);
 		}).send(server);
 
 		SynthDef("looperAudio",{
@@ -317,9 +315,9 @@ Ouroboros2 {
 			var playhead, snd0, snd1, snd;
 			var tr=In.kr(busMetronome,1);
 			playhead = ToggleFF.kr(tr);
-			snd0 = PlayBuf.kr(1,buf,rate:BufRateScale.ir(buf),loop:1,trigger:1-playhead);
-			snd1 = PlayBuf.kr(1,buf,rate:BufRateScale.ir(buf),loop:1,trigger:playhead);
-			snd = SelectX.kr(VarLag.kr(playhead,1.0,warp:\linear),[snd0,snd1]);
+			snd0 = PlayBuf.ar(1,buf,rate:BufRateScale.ir(buf),loop:1,trigger:1-playhead);
+			snd1 = PlayBuf.ar(1,buf,rate:BufRateScale.ir(buf),loop:1,trigger:playhead);
+			snd = SelectX.ar(VarLag.kr(playhead,1.0,warp:\linear),[snd0,snd1]);
 			snd = snd * EnvGen.ar(Env.adsr(0.22,1,1,10),gate:gate,doneAction:2);
 			SendReply.kr(Impulse.kr(10),"/cv",[id,snd]);
 		}).send(server);
