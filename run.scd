@@ -1,27 +1,29 @@
 
 (
+t = Server.default.options;
+t.numInputBusChannels = 1;
 s.waitForBoot({
 	var bpm = 90;
 	var recCount = 0;
 	var doRecord = true;
 	var loopNum = 0;
-	var loopNumMax = 8;
+	var loopNumMax = 10;
 	var scale=Array.new;
 	var cscale=Scale.major.degrees;
+
 	2.do({ arg octave;
 		cscale.do({arg v;
 			scale=scale.add(36+v+(octave*12));
 		});
 	});
 
-	// crow stuff
-	// p = SerialPort.new(
-	// 	"/dev/ttyACM0",
-	// 	baudrate: 115200
-	// );
+	p = SerialPort.new(
+		"/dev/ttyACM0",
+		baudrate: 115200
+	);
 	~crowSet = {
 		arg port, volts;
-		// p.putAll("output["++port++"].volts="++volts++";\n");
+		p.putAll("output["++port++"].volts="++volts++";\n");
 	};
 
 
@@ -40,11 +42,17 @@ s.waitForBoot({
 	}, '/env');
 
 
-	o=Ouroboros2.new(Server.default);
+
+	o=Ouroboros2.new(s);
+	o.setCVCallback({ arg id, data;
+		// ~crowSet.(2,data);
+	});
+
 
 	m=Miti.new(Server.default,bpm,"
 a3 f3 c3 e3
 c7 a6 c7 b6
+a2 f2 c2 e2
 e5 f g e
 c5 a4 c5 b4
 a6 c7 e6 g6
@@ -65,6 +73,8 @@ a5 a5 c c5
 c6 c6 e6 b5
 
 ");
+
+
 	// g3 g b f
 	// c5 b b a
 	// e4 e d d
@@ -107,13 +117,12 @@ c6 c6 e6 b5
 		var gesture=msg[2].asString;
 		var x=msg[3].asFloat;
 		var y=msg[4].asFloat;
-		var data=x.linlin(0.55,1,0,10);
+		var data=x.linlin(0.54,1,0,10);
 		if (hand.asString=="right",{
 			var note = scale[y.linlin(0.0,1,0,scale.size).round];
 			var octave = 0;
 			if (gesture.asString=="closed",{
 				o.setCV(1,data);
-				^0
 			});
 			if (gesture.asString=="one",{
 				octave = 1;
@@ -130,11 +139,11 @@ c6 c6 e6 b5
 			if (note.notNil,{
 				if (loopNum>loopNumMax,{
 					if (octave>0,{
-						~crowSet.(1,(note-36+(octave*12))/12);
+						~crowSet.(1,(note-48+(octave*12))/12);
 					});
 				});
 			});
-			~crowSet.(3,data);
+			~crowSet.(3,data.postln);
 		});
 		if (hand.asString=="left",{
 			~crowSet.(2,x.linlin(0,0.45,10,0));
@@ -145,19 +154,22 @@ c6 c6 e6 b5
 
 
 
-	ServerMeter.new(s, 2, 2);
+	ServerMeter.new(s,1, 2);
 
-	o.set("main","reverb",0.6);
+	o.set("main","reverb",0.4);
 
-	// p.putAll("output[2].slew=0.1;\n");
-	// p.putAll("output[3].slew=0.1;\n");
-	// p.putAll("output[4].slew=0.1;\n");
+	p.putAll("output[2].slew=0.1;\n");
+	p.putAll("output[3].slew=0.1;\n");
+	p.putAll("output[4].slew=0.1;\n");
 	m.start();
 
 
 
 });
 )
+
+o.set("main","reverb",0.6);
+
 
 // 0.5.linlin(0,1,0,10)
 //

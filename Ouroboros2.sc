@@ -9,6 +9,8 @@ Ouroboros2 {
 	var params;
 	var measures;
 	var saveDir;
+	var doSave;
+	var cvCallback;
 
 	*new { arg argServer;
 		^super.new.init(argServer);
@@ -134,9 +136,15 @@ Ouroboros2 {
 		});
 	}
 
+	setCVCallback {
+		arg fn;
+		cvCallback=fn;
+	}
+
 	set {
 		arg name,k,v;
 		if (syns.at(name).isNil,{
+			["[ouro] set",name,"error: no such name"].postln;
 			^0
 		});
 		if (params.at(name).isNil,{
@@ -144,7 +152,7 @@ Ouroboros2 {
 		});
 
 		if (syns.at(name).isRunning,{
-			//["[ouro] set",name,k,v].postln;
+			["[ouro] set",name,k,v].postln;
 			syns.at(name).set(k,v);
 			params.at(name).put(k,v);
 		});
@@ -160,6 +168,7 @@ Ouroboros2 {
 
 		server = argServer;
 		measures = 0;
+		doSave = false;
 
 		// initialize variables
 		syns = Dictionary.new();
@@ -171,13 +180,13 @@ Ouroboros2 {
 
 		// main output
 		SynthDef("main",{
-			arg busIn, busOut, busCount, db=0, reverb=0;
+			arg busIn, busLive, busOut, busCount, db=0, reverb=0;
 			var snd;
 			var count;
 			count = Clip.kr(In.kr(busCount,1)/5,1,30);
 			snd = In.ar(busIn,2);
 
-			snd = (snd/count) + LPF.ar(SoundIn.ar([0,1]),19000);
+			snd = (snd/count) + In.ar(busLive,2);
 
 			snd = snd * EnvGen.ar(Env.adsr(10,1,1,1));
 
@@ -198,17 +207,19 @@ Ouroboros2 {
 			var snd, incomingFreq, hasFreq, freq;
 
 			snd = SoundIn.ar([0,1]);
+			// temp
+			snd = Pan2.ar(Mix.new(snd));
+
 
 			// filter the input baesd on bandpass filter around the detected pitch
 			# freq, hasFreq = Pitch.kr(Mix.new(snd), ampThreshold: 0.02, median: 7);
-			incomingFreq = Lag.kr(Latch.kr(freq,hasFreq),3);
-			snd = BPF.ar(snd, incomingFreq, 1);
-			// TODO add other bpf harmonics?
+			incomingFreq = 20+Lag.kr(Latch.kr(freq,hasFreq),1);
+			snd = LPF.ar(snd,incomingFreq*4);
+			snd = HPF.ar(snd,incomingFreq*0.25);
 
 			lpf = Clip.kr(lpf,20,135);
 
 			snd = RLPF.ar(snd,lpf.midicps,0.707);
-
 
 			Out.ar(busRecord,snd);
 			Out.ar(busOut,snd);
@@ -251,7 +262,7 @@ Ouroboros2 {
 			RecordBuf.ar(K2A.ar(data), buf, offset: 44, recLevel: record, preLevel: 1-record,loop: 1, trigger: tr);
 			snd = PlayBuf.ar(1,buf,1.0,tr,loop:1);
 			snd = snd * EnvGen.ar(Env.adsr(1,1,1,1),gate);
-			SendReply.kr(Impulse.kr(10),"/cv",[id,snd.poll]);
+			SendReply.kr(Impulse.kr(10),"/cv",[id,snd]);
 		}).send(server);
 
 		SynthDef("looperAudio",{
@@ -265,7 +276,7 @@ Ouroboros2 {
 			snd = SelectX.ar(VarLag.kr(playhead,1.0,warp:\linear),[snd0,snd1]);
 
 			// random amplitude
-			snd = snd * SinOsc.kr(1.0/Rand(5,11)).range(9.neg,3).dbamp;
+			snd = snd * SinOsc.kr(1.0/Rand(5,11)).range(6.neg,3).dbamp;
 
 			// random pan
 			snd = Balance2.ar(snd[0],snd[1],pan + SinOsc.kr(1/Rand(5,11),mul:1));
@@ -298,10 +309,13 @@ Ouroboros2 {
 		oscs.put("cv",OSCFunc({ arg msg, time, addr, recvPort;
 			var id=msg[3].asInteger;
 			var data=msg[4].asFloat;
+			if (cvCallback.notNil,{
+				cvCallback.(id,data);
+			});
 			// ["cv id=",id,"data=",data].postln;
 		}, '/cv'));
 
-		server.sync;
+
 
 		// setup buses
 		buses.put("input",Bus.audio(server,2));
@@ -310,27 +324,35 @@ Ouroboros2 {
 		buses.put("main",Bus.audio(server,2));
 		buses.put("count",Bus.control(server,1));
 
-		// setup synths
-		syns.put("metronome",Synth.head(server,"metronomeManual",[\tempo,120,\busOut,buses.at("metronome")]));
-		syns.put("main",Synth.tail(server,"main",[\busOut,0,\busIn,buses.at("main")]));
-		syns.put("input",Synth.head(syns.at("main"),"input",[
-			busOut: buses.at("main"),
-			busRecord: buses.at("record"),
-			busCount: buses.at("count"),
-		]));
+		Routine {
+			// setup synths
+			syns.put("metronome",Synth.head(server,"metronomeManual",[\tempo,120,\busOut,buses.at("metronome")]));
+			NodeWatcher.register(syns.at("metronome"));
+			server.sync;
+			syns.put("main",Synth.tail(server,"main",[
+				busOut: 0,
+				busIn: buses.at("main"),
+				busLive: buses.at("input"),
+			]));
+			NodeWatcher.register(syns.at("main"));
+			server.sync;
+			syns.put("input",Synth.head(server,"input",[
+				busOut: buses.at("input"),
+				busRecord: buses.at("record"),
+				busCount: buses.at("count"),
+			]));
+			NodeWatcher.register(syns.at("input"));
 
-		syns.keysValuesDo({ arg k, val;
-			NodeWatcher.register(val);
-		});
 
-		// create ouroborous directory for saving recordings
-		saveDir = Platform.userAppSupportDir ++ "/ouroboros/" ++ Date.getDate.stamp;
-		File.mkdir(saveDir);
-		// ("mkdir -p "++saveDir).unixCmdGetStdOut;
-		"[ouro] saving data to".postln;
-		saveDir.postln;
+			// create ouroborous directory for saving recordings
+			saveDir = Platform.userAppSupportDir ++ "/ouroboros/" ++ Date.getDate.stamp;
+			File.mkdir(saveDir);
+			// ("mkdir -p "++saveDir).unixCmdGetStdOut;
+			"[ouro] saving data to".postln;
+			saveDir.postln;
 
-		server.sync;
+			server.sync;
+		}.play;
 		"ready".postln;
 	}
 
