@@ -10,6 +10,8 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -19,7 +21,6 @@ import (
 	RF "github.com/fxsjy/RF.go/RF"
 	"github.com/gorilla/websocket"
 	"github.com/hypebeast/go-osc/osc"
-	"github.com/pkg/browser"
 	log "github.com/schollz/logger"
 	"gonum.org/v1/gonum/stat"
 )
@@ -61,7 +62,7 @@ func init() {
 	flag.IntVar(&flagFrameRate, "reduce-fps", 70, "reduce frame rate (default 70% of max), [0-100]")
 	flag.IntVar(&flagPort, "video server port", 8085, "port for website")
 	flag.IntVar(&flagOSCPort, "osc port", 57120, "port to send osc messages")
-	flag.BoolVar(&flagOpen, "open", false, "don't open browser")
+	flag.BoolVar(&flagOpen, "open", false, "open browser")
 	flag.BoolVar(&flagBuildRF, "build", false, "don't build")
 	flag.StringVar(&flagOSCHost, "osc host", "127.0.0.1", "host to send osc messages")
 	flag.StringVar(&flagLearn, "learn", "", "gesture learning file")
@@ -86,10 +87,26 @@ func main() {
 	log.SetLevel("debug")
 	log.Infof("listening on :%d", flagPort)
 	if flagOpen {
-		browser.OpenURL(fmt.Sprintf("http://localhost:%d/", flagPort))
+		go func() {
+			openBrowser(fmt.Sprintf("http://localhost:%d/", flagPort))
+		}()
 	}
 	http.HandleFunc("/", handler)
 	http.ListenAndServe(fmt.Sprintf(":%d", flagPort), nil)
+}
+
+func openBrowser(url string) bool {
+	var args []string
+	switch runtime.GOOS {
+	case "darwin":
+		args = []string{"open"}
+	case "windows":
+		args = []string{"cmd", "/c", "start"}
+	default:
+		args = []string{"google-chrome"}
+	}
+	cmd := exec.Command(args[0], append(args[1:], url)...)
+	return cmd.Start() == nil
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {

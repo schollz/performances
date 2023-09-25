@@ -7,9 +7,6 @@ require (
 	github.com/fxsjy/RF.go v0.0.0-20140710024358-46700521f302
 	github.com/gorilla/websocket v1.5.0
 	github.com/hypebeast/go-osc v0.0.0-20220308234300-cec5a8a1e5f5
-	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/schollz/logger v1.2.0
 	gonum.org/v1/gonum v0.14.0
 )
-
-require golang.org/x/sys v0.12.0 // indirect
