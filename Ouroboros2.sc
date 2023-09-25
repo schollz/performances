@@ -63,34 +63,6 @@ Ouroboros2 {
 		});
 	}
 
-
-	playCV {
-		arg id;
-		if (bufs.at(id).notNil,{
-			Routine {
-				var args=[
-					buf: bufs.at(id),
-					busMetronome: buses.at("metronome"),
-				];
-				if (params.at(id).notNil,{
-					params.at(id).keysValuesDo({ arg k, v;
-						args=args++[k,v];
-					});
-				});
-				["[ouro] play args:",args].postln;
-				if (syns.at(id).notNil,{
-					["[ouro] sending done to loop",id].postln;
-					syns.at(id).set(\gate,0);
-				});
-				["[ouro] started playing loop",id].postln;
-				syns.put(id,Synth.after(syns.at("metronome"),"looperCV",args).onFree({
-					["[ouro] stopped playing loop",id].postln;
-				}));
-				NodeWatcher.register(syns.at(id));
-			}.play;
-		});
-	}
-
 	prime {
 		arg id, seconds;
 		["[ouro] primed",id,"to record for",seconds].postln;
@@ -136,37 +108,29 @@ Ouroboros2 {
 
 	recordCV {
 		arg id, seconds;
-		var xfade = 2.0;
-		seconds = seconds.asFloat + 2.0;
-
-		// initiate a routine to automatically start playing loop
-		Routine {
-			(seconds-2).wait;
-			if (syns.at(id).notNil,{
-				if (syns.at(id).isRunning,{
-					syns.at(id).set(\gate,0);
-				});
-			});
-			this.play(id);
-		}.play;
 
 		// allocate buffer and record the loop
 		Buffer.alloc(server,seconds*server.sampleRate,1,completionMessage:{ arg buf;
 			bufs.put(id,buf);
-			["[ouro] started recording loop",id].postln;
-			syns.put("record"++id,Synth.after(syns.at("input"),"recorderCV",[
+			["[ouro] started recording cv",id].postln;
+			syns.put("cv"++id,Synth.head(server,"recorderCV",[
 				id: id,
 				buf: buf,
+				busMetronome: buses.at("metronome"),
 			]).onFree({
-				["[ouro] finished recording loop",id].postln;
-				// buf.write(filename,headerFormat: "wav", sampleFormat: "int16",numFrames:seconds*server.sampleRate,completionMessage:{
-				// 	["[ouro] finished writing",filename].postln;
-				// 	Routine{
-				// 		1.wait;
-				// 		NetAddr("127.0.0.1", 10111).sendMsg("recorded",msg[1],msg[3],filename);
-				// 	}.play;
-				// });
+				["[ouro] finished cv recorder",id].postln;
 			}));
+			NodeWatcher.register(syns.at("cv"++id));
+		});
+	}
+
+	setCV {
+		arg id, data;
+		if (syns.at("cv"++id).notNil,{
+			if (syns.at("cv"++id).isRunning,{
+				//["settings cv",id,"data=",data].postln;
+				syns.at("cv"++id).set(\data,data);
+			});
 		});
 	}
 
@@ -279,8 +243,15 @@ Ouroboros2 {
 		}).send(server);
 
 		SynthDef("recorderCV",{
-			arg busIn, buf, db=0, data=0;
-			RecordBuf.ar(Lag.ar(data,2), buf, loop: 0, doneAction: 2);
+			arg id=0, busMetronome, buf, data=0, gate=1;
+			var snd;
+			var tr=In.kr(busMetronome,1);
+			var record=Lag.kr(Trig.kr(Changed.kr(data),1),0.5);
+			data = Lag.kr(data,0.1);
+			RecordBuf.ar(K2A.ar(data), buf, offset: 44, recLevel: record, preLevel: 1-record,loop: 1, trigger: tr);
+			snd = PlayBuf.ar(1,buf,1.0,tr,loop:1);
+			snd = snd * EnvGen.ar(Env.adsr(1,1,1,1),gate);
+			SendReply.kr(Impulse.kr(10),"/cv",[id,snd.poll]);
 		}).send(server);
 
 		SynthDef("looperAudio",{
@@ -299,7 +270,7 @@ Ouroboros2 {
 			// random pan
 			snd = Balance2.ar(snd[0],snd[1],pan + SinOsc.kr(1/Rand(5,11),mul:1));
 
-            DiskOut.ar(bufDisk, snd * db.dbamp);
+			DiskOut.ar(bufDisk, snd * db.dbamp);
 			// adsr
 			snd = snd * EnvGen.ar(Env.adsr(2,1,1,10),gate:gate,doneAction:2);
 
@@ -307,19 +278,6 @@ Ouroboros2 {
 
 			Out.kr(busCount,DC.kr(1));
 			Out.ar(busOut,snd*db.dbamp);
-		}).send(server);
-
-
-		SynthDef("looperCV",{
-			arg id=0,busMetronome, buf, gate=1;
-			var playhead, snd0, snd1, snd;
-			var tr=In.kr(busMetronome,1);
-			playhead = ToggleFF.kr(tr);
-			snd0 = PlayBuf.ar(1,buf,rate:BufRateScale.ir(buf),loop:1,trigger:1-playhead);
-			snd1 = PlayBuf.ar(1,buf,rate:BufRateScale.ir(buf),loop:1,trigger:playhead);
-			snd = SelectX.ar(VarLag.kr(playhead,1.0,warp:\linear),[snd0,snd1]);
-			snd = snd * EnvGen.ar(Env.adsr(0.22,1,1,10),gate:gate,doneAction:2);
-			SendReply.kr(Impulse.kr(10),"/cv",[id,snd]);
 		}).send(server);
 
 		// setup oscs
@@ -338,7 +296,9 @@ Ouroboros2 {
 			[msg, time, addr, recvPort].postln;
 		}, '/playhead'));
 		oscs.put("cv",OSCFunc({ arg msg, time, addr, recvPort;
-			[msg, time, addr, recvPort].postln;
+			var id=msg[3].asInteger;
+			var data=msg[4].asFloat;
+			// ["cv id=",id,"data=",data].postln;
 		}, '/cv'));
 
 		server.sync;

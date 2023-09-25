@@ -15,13 +15,13 @@ s.waitForBoot({
 	});
 
 	// crow stuff
-	p = SerialPort.new(
-		"/dev/ttyACM0",
-		baudrate: 115200
-	);
+	// p = SerialPort.new(
+	// 	"/dev/ttyACM0",
+	// 	baudrate: 115200
+	// );
 	~crowSet = {
 		arg port, volts;
-		p.putAll("output["++port++"].volts="++volts++";\n");
+		// p.putAll("output["++port++"].volts="++volts++";\n");
 	};
 
 
@@ -88,6 +88,9 @@ c6 c6 e6 b5
 		loopNum = loopNum + 1;
 		if (loopNum<loopNumMax,{
 			o.record("loop"++loopNum.mod(8),16.0 * 60 / bpm);
+			if (loopNum==1,{
+				o.recordCV(1,16.0 * 60 / bpm);
+			});
 		});
 	});
 	m.setCallbackScore({
@@ -104,9 +107,14 @@ c6 c6 e6 b5
 		var gesture=msg[2].asString;
 		var x=msg[3].asFloat;
 		var y=msg[4].asFloat;
+		var data=x.linlin(0.55,1,0,10);
 		if (hand.asString=="right",{
 			var note = scale[y.linlin(0.0,1,0,scale.size).round];
 			var octave = 0;
+			if (gesture.asString=="closed",{
+				o.setCV(1,data);
+				^0
+			});
 			if (gesture.asString=="one",{
 				octave = 1;
 			});
@@ -126,7 +134,7 @@ c6 c6 e6 b5
 					});
 				});
 			});
-			~crowSet.(3,x.linlin(0.55,1,0,10));
+			~crowSet.(3,data);
 		});
 		if (hand.asString=="left",{
 			~crowSet.(2,x.linlin(0,0.45,10,0));
@@ -141,9 +149,9 @@ c6 c6 e6 b5
 
 	o.set("main","reverb",0.6);
 
-	p.putAll("output[2].slew=0.1;\n");
-	p.putAll("output[3].slew=0.1;\n");
-	p.putAll("output[4].slew=0.1;\n");
+	// p.putAll("output[2].slew=0.1;\n");
+	// p.putAll("output[3].slew=0.1;\n");
+	// p.putAll("output[4].slew=0.1;\n");
 	m.start();
 
 
