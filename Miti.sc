@@ -19,7 +19,7 @@ Miti {
 		arg p;
 		var phraseNoteArray=Array.new();
 		p.split($\n).do { |line|
-			var parts = line.stripWhiteSpace.split($ );
+			var parts = line.toLower.stripWhiteSpace.split($ );
 			var notes=Array.new(parts.size);
 			var synths=Array.new(parts.size*2);
 			var j=0;

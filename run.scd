@@ -1,19 +1,21 @@
 
 (
 t = Server.default.options;
-t.numInputBusChannels = 1;
+t.numInputBusChannels = 2;
 s.waitForBoot({
-	var bpm = 90;
+	var bpm = 50;
 	var recCount = 0;
 	var doRecord = true;
 	var loopNum = 0;
-	var loopNumMax = 10;
+	var loopNumMax = 8;
 	var scale=Array.new;
 	var cscale=Scale.major.degrees;
+	var handOctave = 0;
+	var handNote = 0;
 
-	2.do({ arg octave;
+	7.do({ arg octave;
 		cscale.do({arg v;
-			scale=scale.add(36+v+(octave*12));
+			scale=scale.add(24+v+(octave*12));
 		});
 	});
 
@@ -49,43 +51,57 @@ s.waitForBoot({
 	});
 
 
+	/*	m=Miti.new(Server.default,bpm,"
+	a3 f3 c3 e3
+	c7 a6 c7 b6
+	a2 f2 c2 e2
+	e5 f g e
+	c5 a4 c5 b4
+	a6 c7 e6 g6
+
+	c7 f7 c7 e7
+	e6 c6 e6 g6
+	a3 f3 c3 e3
+	a5 f5 g e5
+	c6 a5 c6 b5
+
+	e7 c7 e6 g6
+	c7 a6 c7 b6
+	a5 a c e
+	a3 f3 c3 e3
+
+	e5 f g e
+	a5 a5 c c5
+	c6 c6 e6 b5
+
+	");*/
+	// m=Miti.new(Server.default,bpm,"
+	// 	g5 e5 g5 c5
+	// 	b4 g4 b4 f4
+	// 	g2 g2 g2 a2
+	// 	e5 e5 d5 d5
+	// 	e6 c6 d6 d6
+	// 	b6 c6 d6 f6
+	// 	e5 c5 d5 a5
+	// ");
+/*	m=Miti.new(Server.default,bpm,"
+c4 c4 g4 g4
+e5 f5 e5 d5
+a3 a3 c4 b4
+a2 f2 c2 g2
+e5 c5 e5 d5
+e6 e6 g6 b6
+c6
+d6
+");*/
+	// F Am Am Am Am7 Em7 F F F Am Am Am7 Em F F
 	m=Miti.new(Server.default,bpm,"
-a3 f3 c3 e3
-c7 a6 c7 b6
-a2 f2 c2 e2
-e5 f g e
-c5 a4 c5 b4
-a6 c7 e6 g6
-
-c7 f7 c7 e7
-e6 c6 e6 g6
-a3 f3 c3 e3
-a5 f5 g e5
-c6 a5 c6 b5
-
-e7 c7 e6 g6
-c7 a6 c7 b6
-a5 a c e
-a3 f3 c3 e3
-
-e5 f g e
-a5 a5 c c5
-c6 c6 e6 b5
-
+a4 a4 a4 a4 e4 e4 c4 f4 f4 c4 c4 c4 e4 f4 f5
+c5 c5 e5 e6 c5 g5 f5 a5 a6 a5 a5 a5 g6 a4 a4
+f3 e3 c3 c3 a3 d3 a3 c3 c3 e3 e3 e3 d3 c3 c3
+f6 c7 a6 a6 g6 g6 f6 f6 f6 a6 a6 g6 g6 f6 f6
 ");
 
-
-	// g3 g b f
-	// c5 b b a
-	// e4 e d d
-	// -
-	// c2 d e e g e d d
-	// -
-	// g6 g b  a
-	// c6 b d  d
-	// e7 d e g6 d d6 e
-	//
-	// ");
 	m.setCallbackNote({ arg note;
 		["note",note].postln;
 		if (loopNum<loopNumMax,{
@@ -98,9 +114,9 @@ c6 c6 e6 b5
 		loopNum = loopNum + 1;
 		if (loopNum<loopNumMax,{
 			o.record("loop"++loopNum.mod(8),16.0 * 60 / bpm);
-			if (loopNum==1,{
-				o.recordCV(1,16.0 * 60 / bpm);
-			});
+			/*			if (loopNum==1,{
+			o.recordCV(1,16.0 * 60 / bpm);
+			});*/
 		});
 	});
 	m.setCallbackScore({
@@ -111,6 +127,7 @@ c6 c6 e6 b5
 
 
 
+	~scale=scale;
 	OSCFunc({ arg msg, time, addr, recvPort;
 		// [msg, time, addr, recvPort].postln;
 		var hand=msg[1].asString;
@@ -118,45 +135,42 @@ c6 c6 e6 b5
 		var x=msg[3].asFloat;
 		var y=msg[4].asFloat;
 		var data=x.linlin(0.54,1,0,10);
+		var note;
 		if (hand.asString=="right",{
-			var note = scale[y.linlin(0.0,1,0,scale.size).round];
-			var octave = 0;
-			if (gesture.asString=="closed",{
-				o.setCV(1,data);
+			// right hand controls pitches
+			// left hand steps in triads
+			handNote = y.linlin(0.0,1,-7,7).round;
+			note = scale[handNote+(handOctave*3)];
+			if (x>0.9,{
+				note = note + 12;
 			});
-			if (gesture.asString=="one",{
-				octave = 1;
-			});
-			if (gesture.asString=="two",{
-				octave = 2;
-			});
-			if (gesture.asString=="three",{
-				octave = 3;
-			});
-			if (gesture.asString=="four",{
-				octave = 4;
+			if (x<0.7,{
+				note = note - 12;
 			});
 			if (note.notNil,{
-				if (loopNum>loopNumMax,{
-					if (octave>0,{
-						~crowSet.(1,(note-48+(octave*12))/12);
-					});
+				if (gesture.asString=="closed",{
+				},{
+					note.postln;
+					~crowSet.(1,(note-36)/12);
 				});
 			});
-			~crowSet.(3,data.postln);
 		});
 		if (hand.asString=="left",{
-			~crowSet.(2,x.linlin(0,0.45,10,0));
-			o.set("main","reverb",y);
-			// ~crowSet.(4,y.linlin(0,1,0,10));
+			handOctave = y.linlin(0.0,1,0,12).round;
+			// if (loopNum>loopNumMax,{
+			// 	~crowSet.(1,(handNote-48+(handOctave*5))/12);
+			// });
+
+			// crow 2 ->  FM 1. FM1 knob fully CW
+			~crowSet.(2,x.linlin(0,0.5,0,10).postln);
+			// crow 3 -> GAIN. GAIN knob at 8pm
+			~crowSet.(3,x.linlin(0,1,0,4).postln);
 		});
 	}, '/conductor');
 
 
 
-	ServerMeter.new(s,1, 2);
-
-	o.set("main","reverb",0.4);
+	ServerMeter.new(s,2, 2);
 
 	p.putAll("output[2].slew=0.1;\n");
 	p.putAll("output[3].slew=0.1;\n");
@@ -165,12 +179,18 @@ c6 c6 e6 b5
 
 
 
+	Routine {
+		1.wait;
+		o.set("main","reverb",0.4);
+	}.play;
 });
 )
+o.set("main","reverb",0.5);
 
-o.set("main","reverb",0.6);
+a=[1,2,5,12]
+a[a.indexIn(1.1)]
 
-
+~scale.postln
 // 0.5.linlin(0,1,0,10)
 //
 // s.show

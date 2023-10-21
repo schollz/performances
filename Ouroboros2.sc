@@ -208,14 +208,14 @@ Ouroboros2 {
 
 			snd = SoundIn.ar([0,1]);
 			// temp
-			snd = Pan2.ar(Mix.new(snd));
+			// snd = Pan2.ar(Mix.new(snd));
 
 
 			// filter the input baesd on bandpass filter around the detected pitch
-			# freq, hasFreq = Pitch.kr(Mix.new(snd), ampThreshold: 0.02, median: 7);
-			incomingFreq = 20+Lag.kr(Latch.kr(freq,hasFreq),1);
-			snd = LPF.ar(snd,incomingFreq*4);
-			snd = HPF.ar(snd,incomingFreq*0.25);
+			// # freq, hasFreq = Pitch.kr(Mix.new(snd), ampThreshold: 0.02, median: 7);
+			// incomingFreq = 20+Lag.kr(Latch.kr(freq,hasFreq),1);
+			// snd = LPF.ar(snd,incomingFreq*4);
+			// snd = HPF.ar(snd,incomingFreq*0.25);
 
 			lpf = Clip.kr(lpf,20,135);
 
