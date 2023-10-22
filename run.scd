@@ -3,15 +3,16 @@
 t = Server.default.options;
 t.numInputBusChannels = 2;
 s.waitForBoot({
-	var bpm = 50;
+	var bpm = 90;
 	var recCount = 0;
 	var doRecord = true;
 	var loopNum = 0;
-	var loopNumMax = 8;
+	var loopNumMax = 7;
 	var scale=Array.new;
 	var cscale=Scale.major.degrees;
 	var handOctave = 0;
 	var handNote = 0;
+	s.record;
 
 	7.do({ arg octave;
 		cscale.do({arg v;
@@ -27,6 +28,7 @@ s.waitForBoot({
 		arg port, volts;
 		p.putAll("output["++port++"].volts="++volts++";\n");
 	};
+	p.putAll("output[4].action='{  to(10,"++(60/bpm/2)++",logarithmic), to(0,"++(60/bpm)++",exponential) }';\n");
 
 
 	// synthdefs
@@ -84,29 +86,40 @@ s.waitForBoot({
 	// 	b6 c6 d6 f6
 	// 	e5 c5 d5 a5
 	// ");
-/*	m=Miti.new(Server.default,bpm,"
-c4 c4 g4 g4
-e5 f5 e5 d5
-a3 a3 c4 b4
-a2 f2 c2 g2
-e5 c5 e5 d5
-e6 e6 g6 b6
-c6
-d6
-");*/
+		m=Miti.new(Server.default,bpm,"
+	c4 c4 g4 g4
+	e5 f5 e5 d5
+	a3 a3 c4 b4
+	a2 f2 c2 g2
+	e5 c5 e5 d5
+	e6 e6 g6 b6
+	a2 f2 c2 g2
+	c6
+	d6
+	");
+		m=Miti.new(Server.default,bpm,"
+	c4 c4 g4 g4
+	e5 f5 e5 d5
+	a3 a3 c4 b4
+	a2 f2 c2 g2
+	e6 e6 g6 b6
+	c6
+	d6
+	");
 	// F Am Am Am Am7 Em7 F F F Am Am Am7 Em F F
-	m=Miti.new(Server.default,bpm,"
-a4 a4 a4 a4 e4 e4 c4 f4 f4 c4 c4 c4 e4 f4 f5
-c5 c5 e5 e6 c5 g5 f5 a5 a6 a5 a5 a5 g6 a4 a4
-f3 e3 c3 c3 a3 d3 a3 c3 c3 e3 e3 e3 d3 c3 c3
-f6 c7 a6 a6 g6 g6 f6 f6 f6 a6 a6 g6 g6 f6 f6
-");
+	// m=Miti.new(Server.default,bpm,"
+	// 	a4 a4 a4 a4 e4 e4 c4 f4 f4 c4 c4 c4 e4 f4 f5
+	// 	c5 c5 e5 e6 c5 g5 f5 a5 a6 a5 a5 a5 g6 a4 a4
+	// 	f3 e3 c3 c3 a3 d3 a3 c3 c3 e3 e3 e3 d3 c3 c3
+	// 	f6 c7 a6 a6 g6 g6 f6 f6 f6 a6 a6 g6 g6 f6 f6
+	// ");
 
 	m.setCallbackNote({ arg note;
 		["note",note].postln;
 		if (loopNum<loopNumMax,{
 			~crowSet.(1,(note-36)/12);
 		});
+		p.putAll("output[4]();\n");
 	});
 	m.setCallbackMeasure({ arg measure;
 		["measure",measure].postln;
@@ -162,9 +175,9 @@ f6 c7 a6 a6 g6 g6 f6 f6 f6 a6 a6 g6 g6 f6 f6
 			// });
 
 			// crow 2 ->  FM 1. FM1 knob fully CW
-			~crowSet.(2,x.linlin(0,0.5,0,10).postln);
+			~crowSet.(2,x.linlin(0,0.5,0,10));
 			// crow 3 -> GAIN. GAIN knob at 8pm
-			~crowSet.(3,x.linlin(0,1,0,4).postln);
+			~crowSet.(3,x.linlin(0,1,0,4));
 		});
 	}, '/conductor');
 
@@ -185,7 +198,7 @@ f6 c7 a6 a6 g6 g6 f6 f6 f6 a6 a6 g6 g6 f6 f6
 	}.play;
 });
 )
-o.set("main","reverb",0.5);
+o.set("main","reverb",0.6);
 
 a=[1,2,5,12]
 a[a.indexIn(1.1)]
