@@ -7,12 +7,13 @@ s.waitForBoot({
 	var recCount = 0;
 	var doRecord = true;
 	var loopNum = 0;
-	var loopNumMax = 7;
+	var loopNumMax = 80;
+	var loopRecordMax = 8;
 	var scale=Array.new;
 	var cscale=Scale.major.degrees;
 	var handOctave = 0;
 	var handNote = 0;
-	s.record;
+	// s.record;
 
 	7.do({ arg octave;
 		cscale.do({arg v;
@@ -98,13 +99,19 @@ s.waitForBoot({
 	d6
 	");
 		m=Miti.new(Server.default,bpm,"
+	a2 f2 c2 g2
+	a3 a3 c4 b4
 	c4 c4 g4 g4
 	e5 f5 e5 d5
-	a3 a3 c4 b4
-	a2 f2 c2 g2
 	e6 e6 g6 b6
-	c6
-	d6
+	c7 c7 c7 d7
+	e7 d7 e7 b6
+    c6 c6 a5 a5 c6 c6 f6 f6 e6 e6 e6 e6 g6 g6 b6 b6
+    c6 c6 a5 a5 c6 c6 f6 f6 e6 e6 e6 e6 g6 g6 b6 b6
+	c7 c7 c7 d7
+    c6 c6 a5 a5 c6 c6 f6 f6 e6 e6 e6 e6 g6 g6 b6 b6
+    c6 e6 a5 b5 c6 a6 a6 f6 e6 g6 c6 g6 g5 b5 d5 b5
+    e6
 	");
 	// F Am Am Am Am7 Em7 F F F Am Am Am7 Em F F
 	// m=Miti.new(Server.default,bpm,"
@@ -125,7 +132,7 @@ s.waitForBoot({
 		["measure",measure].postln;
 		o.set("metronome","t_trig",1);
 		loopNum = loopNum + 1;
-		if (loopNum<loopNumMax,{
+		if (loopNum<loopRecordMax,{
 			o.record("loop"++loopNum.mod(8),16.0 * 60 / bpm);
 			/*			if (loopNum==1,{
 			o.recordCV(1,16.0 * 60 / bpm);
@@ -198,7 +205,7 @@ s.waitForBoot({
 	}.play;
 });
 )
-o.set("main","reverb",0.6);
+o.set("main","reverb",0.4);
 
 a=[1,2,5,12]
 a[a.indexIn(1.1)]
