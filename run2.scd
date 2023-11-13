@@ -24,6 +24,7 @@ s.waitForBoot({
 
 
 	SynthDef("jp",{ | out=0,amp=1,freq = 523.3572, detune = 0.5,lpf=10,t_trig=0|
+		var in, local;
 		var detuneCurve = { |x|
 			(10028.7312891634*x.pow(11)) -
 			(50818.8652045924*x.pow(10)) +
@@ -58,12 +59,26 @@ s.waitForBoot({
 		var mix = LFNoise2.kr(1/3).range(0.1,0.9);
 		var sig = (center * centerGain.(mix)) + (side * sideGain.(mix));
 
-
 		sig = Splay.ar(sig);
 		sig = HPF.ar(sig, freq);
-		sig = BLowPass.ar(sig,LFNoise2.kr(1/3).range(20,100).midicps,LFNoise2.kr(1/3).range(0.4,1.0));
+		sig = BLowPass.ar(sig,MouseX.kr(30,125).midicps,LFNoise2.kr(1/3).range(0.4,1.0));
+		sig = BLowPass.ar(sig,freq*4);
+		sig = BHiPass.ar(sig,freq/2);
 		sig = sig * (1-EnvGen.ar(Env.perc(0.05,1),gate:t_trig));
-		Out.ar(out,sig*amp);
+
+		// tape delay
+		in = sig;
+		in = in * (Amplitude.kr(Mix.ar(in)) > 0.02); // noise gate
+		local = LocalIn.ar(2)*LFNoise2.kr(1/3).range(0,1.3);
+		local = OnePole.ar(local, LFNoise2.kr(1/3).range(0.2,0.5));
+		local = OnePole.ar(local, -0.08);
+		local = Rotate2.ar(local[0], local[1], LFNoise2.kr(1/3).range(0.1,0.3));
+		local = DelayN.ar(local, 0.25, 0.25);
+		local = LeakDC.ar(local);
+		local = ((local + in) * LFNoise2.kr(1/3).range(0.75,1.25)).softclip;
+		LocalOut.ar(DelayC.ar(local,0.5,Slew.kr(Lag.kr(LFNoise0.kr(1/11).range(0.2,0.5),3)).poll));
+
+		Out.ar(out,local*amp);
 	}).send(s);
 
 
@@ -76,8 +91,8 @@ a3 a3 c4 b4
 c4 c4 g4 g4
 e5 f5 e5 d5
 e6 e6 g6 b6
-c7 c7 c7 d7
-e7 d7 e7 b6
+c5 c5 c5 d5
+e4 d4 e4 b5
 c6 c6 a5 a5 c6 c6 f6 f6 e6 e6 e6 e6 g6 g6 b6 b6
 c6 c6 a5 a5 c6 c6 f6 f6 e6 e6 e6 e6 g6 g6 b6 b6
 c7 c7 c7 d7
@@ -93,8 +108,8 @@ e6
 			if (lastNote-note==0,{
 			},{
 				a.set(\freq,note.midicps,\t_trig,1);
+				lastNote = note;
 			})
-			// ~crowSet.(1,(note-36)/12);
 		});
 	});
 	m.setCallbackMeasure({ arg measure;
@@ -116,4 +131,4 @@ e6
 });
 )
 
-o.set("main","reverb",0.5);
+o.set("main","reverb",0.7);
