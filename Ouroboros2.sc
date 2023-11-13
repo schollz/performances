@@ -2,7 +2,7 @@ Ouroboros2 {
 
 	var server;
 	var <bufs;
-	var buses;
+	var <buses;
 	var syns;
 	var oscs;
 	var primed;
@@ -206,7 +206,8 @@ Ouroboros2 {
 			arg busOut,busRecord,lpf=135;
 			var snd, incomingFreq, hasFreq, freq;
 
-			snd = SoundIn.ar([0,1]);
+			snd = SoundIn.ar([0,1])*0;
+			snd = snd + In.ar(busRecord,2);
 			// temp
 			// snd = Pan2.ar(Mix.new(snd));
 
