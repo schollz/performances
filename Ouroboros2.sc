@@ -190,15 +190,18 @@ Ouroboros2 {
 
 			snd = snd * EnvGen.ar(Env.adsr(10,1,1,1));
 
+			snd = RHPF.ar(snd,60,0.606);
+
 			snd = AnalogTape.ar(snd,0.9,0.9,0.7,2);
 
 			snd = SelectX.ar(Lag.kr(reverb,1),[snd,
 				Fverb.ar(snd[0],snd[1],200,
-					tail_density: LFNoise2.kr(1/3).range(50,90),
-					decay: LFNoise2.kr(1/3).range(50,90),
+					tail_density: LFNoise2.kr(1/3).range(70,95),
+					decay: LFNoise2.kr(1/3).range(70,95),
 				)
 			]);
 
+			snd = Limiter.ar(snd)*0.75;
 			Out.ar(busOut,snd * Lag.kr(db,30).dbamp);
 		}).send(server);
 
