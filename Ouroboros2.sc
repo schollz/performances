@@ -3,7 +3,7 @@ Ouroboros2 {
 	var server;
 	var <bufs;
 	var <buses;
-	var syns;
+	var <syns;
 	var oscs;
 	var primed;
 	var params;
@@ -206,10 +206,10 @@ Ouroboros2 {
 		}).send(server);
 
 		SynthDef("input",{
-			arg busOut,busRecord,lpf=135;
+			arg busOut,busRecord,lpf=135, db=0;
 			var snd, incomingFreq, hasFreq, freq;
 
-			snd = SoundIn.ar([0,1])*0;
+			snd = SoundIn.ar([0,1]) * db.dbamp;
 			snd = snd + In.ar(busRecord,2);
 			// temp
 			// snd = Pan2.ar(Mix.new(snd));
@@ -273,7 +273,7 @@ Ouroboros2 {
 			arg busMetronome, busOut, busCount, buf, db=0, pan=0, gate=1, bufDisk;
 			var playhead, snd0, snd1, snd;
 			var tr=In.kr(busMetronome,1);
-			db = VarLag.kr(db,30,warp:\sine);
+			db = VarLag.kr(db,1,warp:\sine);
 			playhead = ToggleFF.kr(tr);
 			snd0 = PlayBuf.ar(2,buf,rate:BufRateScale.ir(buf),loop:1,trigger:1-playhead);
 			snd1 = PlayBuf.ar(2,buf,rate:BufRateScale.ir(buf),loop:1,trigger:playhead);
@@ -358,6 +358,17 @@ Ouroboros2 {
 			server.sync;
 		}.play;
 		"ready".postln;
+	}
+
+	playAudio {
+		arg id,buf;
+		var args=[
+			buf: buf,
+			busOut: buses.at("main"),
+			busMetronome: buses.at("metronome"),
+			busCount: buses.at("count"),
+		];
+		syns.put(id,Synth.after(syns.at("metronome"),"looperAudio",args));
 	}
 
 
