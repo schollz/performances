@@ -194,7 +194,7 @@ Ouroboros2 {
 
 			snd = AnalogTape.ar(snd,0.9,0.9,0.7,2);
 
-			snd = SelectX.ar(Lag.kr(reverb,1),[snd,
+			snd = SelectX.ar(Lag.kr(reverb,5),[snd,
 				Fverb.ar(snd[0],snd[1],200,
 					tail_density: LFNoise2.kr(1/3).range(70,95),
 					decay: LFNoise2.kr(1/3).range(70,95),

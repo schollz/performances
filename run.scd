@@ -3,7 +3,7 @@
 t = Server.default.options;
 t.numInputBusChannels = 2;
 s.waitForBoot({
-	var bpm = 90;
+	var bpm = 120;//90;
 	var recCount = 0;
 	var doRecord = true;
 	var loopNum = 0;
@@ -13,7 +13,6 @@ s.waitForBoot({
 	var cscale=Scale.major.degrees;
 	var handOctave = 0;
 	var handNote = 0;
-	// s.record;
 
 	7.do({ arg octave;
 		cscale.do({arg v;
@@ -53,73 +52,43 @@ s.waitForBoot({
 		// ~crowSet.(2,data);
 	});
 
+	m=Miti.new(Server.default,bpm,"
+a2 f2 c2 g2
+a3 a3 c4 b4
+c4 c4 g4 g4
+e5 f5 e5 d5
+e6 e6 g6 b6
+c7 c7 c7 d7
+e7 d7 e7 b6
+c6 c6 a5 a5 c6 c6 f6 f6 e6 e6 e6 e6 g6 g6 b6 b6
+c6 c6 a5 a5 c6 c6 f6 f6 e6 e6 e6 e6 g6 g6 b6 b6
+c7 c7 c7 d7
+c6 c6 a5 a5 c6 c6 f6 f6 e6 e6 e6 e6 g6 g6 b6 b6
+c6 e6 a5 b5 c6 a6 a6 f6 e6 g6 c6 g6 g5 b5 d5 b5
+e6
+a6 e4 a4 a5 c4 c5 e6 g6 c6 c6 a4 c6 f4 c6 a5 c6 c6 c6 g6 g6 c6 c6 g6 g5 b5 g6 d4 d5 d4 g6 b6 d6
+c5 e6 c5 g5 c6 a6 a4 a6 a5 a6 f6 a4 e5 f6 a6 c6 e6 c4 g6 e4 c6 c6 g6 c6 g5 d5 d6 b5 d5 d4 b6 d6
+e4 a6 a6 c6 c6 a6 c6 a5 f5 c5 f6 c6 e6 f6 a4 c6 g5 c4 c4 e6 c4 g5 g6 c5 g6 g6 g6 g6 b4 b4 g4 b5
+c5 g6 e6 c6 c4 c4 e6 e6 c6 c4 a4 e6 e6 a6 f6 e6 e4 c6 g6 e5 g6 c6 g6 e6 b5 d5 b6 g6 g6 d6 b6 b6
+a4 c6 g4 a6 g6 a6 e5 g6 e4 a6 a6 e6 e6 e6 a5 c5 f6 f4 f6 a4 f5 f5 f6 c6 a4 a5 a6 f6 f5 c6 c6 c6 g4 c5 e6 c6 g6 g6 g5 e6 c6 g6 e6 g6 c5 g6 c5 g5 g6 b6 b6 g6 g6 g4 d6 b4 d6 g6 d6 g5 g6 b4 d5 g6
+c5 a6 a4 a6 e6 c5 a6 a6 a5 e6 a6 e5 c6 e6 c6 c5 a5 a6 c4 g6 a5 a5 c4 e6 e5 e4 c5 a6 g6 a5 a6 c5 f6 a6 a6 e4 f6 c6 c4 f6 f6 e5 e4 f5 a6 a6 a4 f6 c5 c6 c6 c6 f4 c5 f6 a6 a6 c6 f4 f4 a6 f4 a5 c4 c6 c6 g4 g5 c6 c6 c6 c5 e6 c6 c6 g5 g4 e6 g6 g6 g6 c6 g6 c6 g6 c6 e5 g6 e4 g5 g5 e6 g4 c6 e6 g4 d6 g6 g4 b4 g4 d6 b6 g6 d6 b4 g4 b6 d6 g5 g6 d6 d6 d6 b6 d4 b5 g4 b6 d5 g6 b6 d5 d5 d5 g6 d4 g6
+e4 a6 a6 c6 c6 a6 c6 a5 f5 c5 f6 c6 e6 f6 a4 c6 g5 c4 c4 e6 c4 g5 g6 c5 g6 g6 g6 g6 b4 b4 g4 b5
+c5 g6 e6 c6 c4 c4 e6 e6 c6 c4 a4 e6 e6 a6 f6 e6 e4 c6 g6 e5 g6 c6 g6 e6 b5 d5 b6 g6 g6 d6 b6 b6
+");
 
-	/*	m=Miti.new(Server.default,bpm,"
-	a3 f3 c3 e3
-	c7 a6 c7 b6
-	a2 f2 c2 e2
-	e5 f g e
-	c5 a4 c5 b4
-	a6 c7 e6 g6
-
-	c7 f7 c7 e7
-	e6 c6 e6 g6
-	a3 f3 c3 e3
-	a5 f5 g e5
-	c6 a5 c6 b5
-
-	e7 c7 e6 g6
-	c7 a6 c7 b6
-	a5 a c e
-	a3 f3 c3 e3
-
-	e5 f g e
-	a5 a5 c c5
-	c6 c6 e6 b5
-
-	");*/
-	// m=Miti.new(Server.default,bpm,"
-	// 	g5 e5 g5 c5
-	// 	b4 g4 b4 f4
-	// 	g2 g2 g2 a2
-	// 	e5 e5 d5 d5
-	// 	e6 c6 d6 d6
-	// 	b6 c6 d6 f6
-	// 	e5 c5 d5 a5
-	// ");
-		m=Miti.new(Server.default,bpm,"
-	c4 c4 g4 g4
-	e5 f5 e5 d5
-	a3 a3 c4 b4
-	a2 f2 c2 g2
-	e5 c5 e5 d5
-	e6 e6 g6 b6
-	a2 f2 c2 g2
-	c6
-	d6
-	");
-		m=Miti.new(Server.default,bpm,"
-	a2 f2 c2 g2
-	a3 a3 c4 b4
-	c4 c4 g4 g4
-	e5 f5 e5 d5
-	e6 e6 g6 b6
-	c7 c7 c7 d7
-	e7 d7 e7 b6
-    c6 c6 a5 a5 c6 c6 f6 f6 e6 e6 e6 e6 g6 g6 b6 b6
-    c6 c6 a5 a5 c6 c6 f6 f6 e6 e6 e6 e6 g6 g6 b6 b6
-	c7 c7 c7 d7
-    c6 c6 a5 a5 c6 c6 f6 f6 e6 e6 e6 e6 g6 g6 b6 b6
-    c6 e6 a5 b5 c6 a6 a6 f6 e6 g6 c6 g6 g5 b5 d5 b5
-    e6
-	");
-	// F Am Am Am Am7 Em7 F F F Am Am Am7 Em F F
-	// m=Miti.new(Server.default,bpm,"
-	// 	a4 a4 a4 a4 e4 e4 c4 f4 f4 c4 c4 c4 e4 f4 f5
-	// 	c5 c5 e5 e6 c5 g5 f5 a5 a6 a5 a5 a5 g6 a4 a4
-	// 	f3 e3 c3 c3 a3 d3 a3 c3 c3 e3 e3 e3 d3 c3 c3
-	// 	f6 c7 a6 a6 g6 g6 f6 f6 f6 a6 a6 g6 g6 f6 f6
-	// ");
+/*	m=Miti.new(Server.default,bpm,"
+d5  a5  a5  e5  g#5 f#5 f#5 f#6 c#6 f#6 f#6 g#6 a6  d7
+a3  f#3 f#3 f#3 c#3 a3  a3  d3  f#3 c#3 c#3 c#3 f#3 f#3
+f#6 c#7 c#7 a6  e6  d6  d6  a6  a6  a5  a5  e6  d6  a5
+a4  a4  a4  e4  g#4 a5  a5  d5  f#5 d5  c#5 c#5 f#5 f#5
+d7  f#7 f#7 a7  e7  d7  d7  d7  f#7 c#7 f#7 e7  d7  a7
+a7  a7  a7  e7  g#7 f#7 f#7 a7  a7  a7  a7  e7  a7  d7
+");*/
+/*	m=Miti.new(Server.default,bpm,"
+d5 e5  a4 a4  f4 f4  c5 c5
+b4 c5  d4 d4  a5 a5  e5 e5
+g6 a6  f6 f6  c6 c6  g5 g5
+");*/
 
 	m.setCallbackNote({ arg note;
 		["note",note].postln;
@@ -190,14 +159,19 @@ s.waitForBoot({
 
 
 
-	ServerMeter.new(s,2, 2);
+	//ServerMeter.new(s,2, 2);
 
 	p.putAll("output[2].slew=0.1;\n");
 	p.putAll("output[3].slew=0.1;\n");
 	p.putAll("output[4].slew=0.1;\n");
 	m.start();
 
-
+	// Buffer.read(s,"/home/zns/Music/spliceloop2/drums-ambient/70/dt_70_drum_loop_tromb_kick_key_bpm70_beats8_.flac",action:{
+	// Buffer.read(s,"/home/zns/Music/spliceloop2/drums-ambient/90/AG_90_drum_loop_stood_kick_key_bpm90_beats16_.flac",action:{
+	// 	arg buf;
+	// 	o.playAudio("drums",buf);
+	// 	// Synth.head(o.buses("main")
+	// });
 
 	Routine {
 		1.wait;
@@ -205,26 +179,42 @@ s.waitForBoot({
 	}.play;
 });
 )
-o.set("main","reverb",0.4);
+(
+8.do({ arg v;
+	var loop=(v+1);
+	o.set("loop"++loop,"db",-96);
+});
+)
 
-a=[1,2,5,12]
-a[a.indexIn(1.1)]
+(
+// Define the number of loops
+var numLoops = 7;
 
-~scale.postln
-// 0.5.linlin(0,1,0,10)
-//
-// s.show
-//
-// o.set("main","reverb",0.5);
-// o.set("main","reverb",0);
-// o.set("main","db",64.neg);
-// o.set("metronome","t_trig",1)
-//
-// o.set("loop1","gate",0);
-// o.set("loop2","gate",0);
-// o.set("loop3","gate",0);
-// o.set("loop4","gate",0);
-// o.set("loop5","gate",0);
-//
-// ~crowSet.(1,(74-36)/12);
+// Initialize the GUI window
+var window = Window("Loop Controller", Rect(100, 100, 400,220));
+var sliders = Array.newClear(numLoops);
+var labels = Array.newClear(numLoops);
+var sliderSpec = ControlSpec(-96, 0, \linear, 0.01);
+// Create sliders and labels for each loop
+numLoops.do { |i|
+	var loopIndex = i + 1; // Adjust for human-readable loop numbering
+	var xPosition = i * 50 + 10; // Position sliders vertically
 
+	// Create a label for the loop
+	labels[i] = StaticText(window, Rect(xPosition, 10, 50, 20))
+	.string_(loopIndex)
+	.align_(\center);
+
+	sliders[i] = Slider(window, Rect(xPosition+15, 50, 20,150))
+	.focusColor_(Color.red(alpha:0.2))
+	.background_(Color.rand)
+	.value_(1)
+	.action_({
+		labels[i].string_(sliderSpec.map(sliders[i].value));
+		o.set("loop"++loopIndex,"db",sliderSpec.map(sliders[i].value));
+	});
+};
+
+// Show the window
+window.front;
+)

@@ -32,7 +32,12 @@ Miti {
 						octave=part[1].asString.asInteger;
 						if (octave==0,{ octave = lastOctave; });
 						lastOctave = octave;
+						if (part.contains("#"),{
+							note = note + 1;
+							octave=part[2].asString.asInteger;
+						});
 						note=note+(12*octave);
+						[part,note].postln;
 						notes.insert(i,note);
 
 					});
