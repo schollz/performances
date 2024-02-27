@@ -53,6 +53,7 @@ s.waitForBoot({
 		// ~crowSet.(2,data);
 	});
 
+	// final
 	m=Miti.new(Server.default,bpm,"
 a2 f2 c2 g2
 a3 a3 c4 b4
@@ -68,11 +69,15 @@ c6 c6 a5 a5 c6 c6 f6 f6 e6 e6 e6 e6 g6 g6 b6 b6
 c6 e6 a5 b5 c6 a6 a6 f6 e6 g6 c6 g6 g5 b5 d5 b5
 e6
 a6 e4 a4 a5 c4 c5 e6 g6 c6 c6 a4 c6 f4 c6 a5 c6 c6 c6 g6 g6 c6 c6 g6 g5 b5 g6 d4 d5 d4 g6 b6 d6
-c5 e6 c5 g5 c6 a6 a4 a6 a5 a6 f6 a4 e5 f6 a6 c6 e6 c4 g6 e4 c6 c6 g6 c6 g5 d5 d6 b5 d5 d4 b6 d6
+a6 e4 a4 a5 c4 c5 e6 g6 c6 c6 a4 c6 f4 c6 a5 c6 c6 c6 g6 g6 c6 c6 g6 g5 b5 g6 d4 d5 d4 g6 b6 d6
 e4 a6 a6 c6 c6 a6 c6 a5 f5 c5 f6 c6 e6 f6 a4 c6 g5 c4 c4 e6 c4 g5 g6 c5 g6 g6 g6 g6 b4 b4 g4 b5
+e4 a6 a6 c6 c6 a6 c6 a5 f5 c5 f6 c6 e6 f6 a4 c6 g5 c4 c4 e6 c4 g5 g6 c5 g6 g6 g6 g6 b4 b4 g4 b5
+c5 e6 c5 g5 c6 a6 a4 a6 a5 a6 f6 a4 e5 f6 a6 c6 e6 c4 g6 e4 c6 c6 g6 c6 g5 d5 d6 b5 d5 d4 b6 d6
 c5 g6 e6 c6 c4 c4 e6 e6 c6 c4 a4 e6 e6 a6 f6 e6 e4 c6 g6 e5 g6 c6 g6 e6 b5 d5 b6 g6 g6 d6 b6 b6
 a4 c6 g4 a6 g6 a6 e5 g6 e4 a6 a6 e6 e6 e6 a5 c5 f6 f4 f6 a4 f5 f5 f6 c6 a4 a5 a6 f6 f5 c6 c6 c6 g4 c5 e6 c6 g6 g6 g5 e6 c6 g6 e6 g6 c5 g6 c5 g5 g6 b6 b6 g6 g6 g4 d6 b4 d6 g6 d6 g5 g6 b4 d5 g6
-c5 a6 a4 a6 e6 c5 a6 a6 a5 e6 a6 e5 c6 e6 c6 c5 a5 a6 c4 g6 a5 a5 c4 e6 e5 e4 c5 a6 g6 a5 a6 c5 f6 a6 a6 e4 f6 c6 c4 f6 f6 e5 e4 f5 a6 a6 a4 f6 c5 c6 c6 c6 f4 c5 f6 a6 a6 c6 f4 f4 a6 f4 a5 c4 c6 c6 g4 g5 c6 c6 c6 c5 e6 c6 c6 g5 g4 e6 g6 g6 g6 c6 g6 c6 g6 c6 e5 g6 e4 g5 g5 e6 g4 c6 e6 g4 d6 g6 g4 b4 g4 d6 b6 g6 d6 b4 g4 b6 d6 g5 g6 d6 d6 d6 b6 d4 b5 g4 b6 d5 g6 b6 d5 d5 d5 g6 d4 g6
+a4 c6 g4 a6 g6 a6 e5 g6 e4 a6 a6 e6 e6 e6 a5 c5 f6 f4 f6 a4 f5 f5 f6 c6 a4 a5 a6 f6 f5 c6 c6 c6 g4 c5 e6 c6 g6 g6 g5 e6 c6 g6 e6 g6 c5 g6 c5 g5 g6 b6 b6 g6 g6 g4 d6 b4 d6 g6 d6 g5 g6 b4 d5 g6
+c5 a6 a4 a6 e6 c5 a6 a6 a5 e6 a6 e5 c6 e6 c6 c5 a5 a6 c4 g6 a5 a5 c4 e6 e5 e4 c5 a6 g6 a5 a6 c5 f6 a6 a6 e4 f6 c6 c4 f6 f6 e5 e4 f5 a6 a6 a4 f6 c5 c6 c6 c6 f4 c5 f6 a6 a6 c6 f4 f4 a6 f4 a5 c4
+c6 c6 g4 g5 c6 c6 c6 c5 e6 c6 c6 g5 g4 e6 g6 g6 g6 c6 g6 c6 g6 c6 e5 g6 e4 g5 g5 e6 g4 c6 e6 g4 d6 g6 g4 b4 g4 d6 b6 g6 d6 b4 g4 b6 d6 g5 g6 d6 d6 d6 b6 d4 b5 g4 b6 d5 g6 b6 d5 d5 d5 g6 d4 g6
 e4 a6 a6 c6 c6 a6 c6 a5 f5 c5 f6 c6 e6 f6 a4 c6 g5 c4 c4 e6 c4 g5 g6 c5 g6 g6 g6 g6 b4 b4 g4 b5
 c5 g6 e6 c6 c4 c4 e6 e6 c6 c4 a4 e6 e6 a6 f6 e6 e4 c6 g6 e5 g6 c6 g6 e6 b5 d5 b6 g6 g6 d6 b6 b6
 ");
@@ -91,44 +96,45 @@ c5 g6 e6 c6 c4 c4 e6 e6 c6 c4 a4 e6 e6 a6 f6 e6 e4 c6 g6 e5 g6 c6 g6 e6 b5 d5 b6
 	g6 a6  f6 f6  c6 c6  g5 g5
 	");*/
 
-	// melody.py
+/*		// melody.py
 	m=Miti.new(Server.default,bpm,"
-c4 c4 c4 b4 b4 b4 a4 a4 a4 a4 a4 a4 a4 a4 a4 a4 d4 d4 d4 d4 d4 d4 f4 f4 f4 f4 f4 f4
-e6 e6 e6 g6 g6 g6 c6 c6 c6 c5 c6 c6 c6 c6 c6 c6 f5 f5 f5 f5 f5 f5 a5 a5 a5 a5 a5 a5
-g6 g6 g6 d7 d7 d7 e7 e7 e7 e5 e7 e7 e7 e7 e7 e7 a6 a6 a6 a6 a6 a6 c7 c7 c7 c7 c7 c7
-c3 c3 c3 g3 g3 g3 a3 a3 a3 a3 a3 a3 a3 c4 c4 c4 d4 d4 d4 e4 e4 e4 f3 f3 f3 f3 f3 f3
+	c4 c4 c4 b4 b4 b4 a4 a4 a4 a4 a4 a4 a4 a4 a4 a4 d4 d4 d4 d4 d4 d4 f4 f4 f4 f4 f4 f4
+	e6 e6 e6 g6 g6 g6 c6 c6 c6 c5 c6 c6 c6 c6 c6 c6 f5 f5 f5 f5 f5 f5 a5 a5 a5 a5 a5 a5
+	g6 g6 g6 d7 d7 d7 e7 e7 e7 e5 e7 e7 e7 e7 e7 e7 a6 a6 a6 a6 a6 a6 c7 c7 c7 c7 c7 c7
+	c3 c3 c3 g3 g3 g3 a3 a3 a3 a3 a3 a3 a3 c4 c4 c4 d4 d4 d4 e4 e4 e4 f3 f3 f3 f3 f3 f3
 
-e4 e4 e4 d6 d6 d6 c6 c6 c6 c6 c6 c6 c6 c6 c6 c6 f5 f5 f5 f5 f5 f5 f6 f6 f6 f6 f6 f6
-g6 g6 g6 b4 b4 b4 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a6 a6 a6 a6 a6 a6
-c7 c7 c7 b5 b5 b5 a6 a6 a6 a6 a6 a6 a6 a6 a6 a6 d6 d6 d6 d6 d6 d6 f6 c6 c6 c6 c6 c6
+	e4 e4 e4 d6 d6 d6 c6 c6 c6 c6 c6 c6 c6 c6 c6 c6 f5 f5 f5 f5 f5 f5 f6 f6 f6 f6 f6 f6
+	g6 g6 g6 b4 b4 b4 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a6 a6 a6 a6 a6 a6
+	c7 c7 c7 b5 b5 b5 a6 a6 a6 a6 a6 a6 a6 a6 a6 a6 d6 d6 d6 d6 d6 d6 f6 c6 c6 c6 c6 c6
 
-e6 e5 c6 c6 c6 c6 b6 b6 g6 b5 d6 g6 e6 a6 e6 a5 c6 e6 a6 a4 c5 e5 a5 c5 e6 c6 a5 a6 a6 e5 a5 e4 d6 d6 a6 d6 a5 a5 f6 a6 d6 a5 a6 f5 c6 f6 c4 f4 c5 c6 a6 c4 f4 f6 a5 f4
-g5 e5 g6 g6 c6 c6 d6 g5 b6 b6 d6 g4 c5 c5 a6 c5 a6 e5 e6 e6 a4 c6 c6 a6 e6 e6 a6 c5 c6 a6 e6 e6 f6 d4 d6 d6 a6 d4 d6 d6 a6 d6 f4 d5 c6 a6 c6 f4 c6 c6 a6 c6 a4 a5 c4 f6
-g6 c4 e6 c6 g4 g6 b5 b6 d6 b6 d6 d6 c6 a6 a6 c6 c6 c4 c6 c6 c6 e5 c5 a6 c5 c6 c4 e4 e6 a6 a5 e6 a5 d4 d6 d6 f5 a6 d4 a6 d4 a4 f6 f6 c6 a5 a6 f6 f5 a6 c4 c6 f6 f6 c6 a6
-g6 g5 c6 e6 c6 e4 g5 e6 g6 e6 g6 g6 d6 b6 g4 d4 d5 g4 g4 d5 d6 d6 b6 d6 e5 a6 e4 e5 e4 a6 e6 e6 a5 c4 c6 c6 a4 c4 a6 e6 e6 c6 e6 e4 c6 c5 a6 a6 c4 c5 c6 a6 a5 c4 a4 c5 a6 a6 c5 c6 a6 c6 c6 c5 f6 d6 d6 a6 d5 f6 d4 a5 f6 d6 d6 a4 a6 a6 d6 a6 f6 d6 d6 d5 a5 d5 d6 a6 c5 a6 c4 a6 a4 c4 c6 f6 f6 f6 c6 c6 c6 a6 a4 c5 c6 a6 c6 a4 c6 c6 c5 f6
-");
+	e6 e5 c6 c6 c6 c6 b6 b6 g6 b5 d6 g6 e6 a6 e6 a5 c6 e6 a6 a4 c5 e5 a5 c5 e6 c6 a5 a6 a6 e5 a5 e4 d6 d6 a6 d6 a5 a5 f6 a6 d6 a5 a6 f5 c6 f6 c4 f4 c5 c6 a6 c4 f4 f6 a5 f4
+	g5 e5 g6 g6 c6 c6 d6 g5 b6 b6 d6 g4 c5 c5 a6 c5 a6 e5 e6 e6 a4 c6 c6 a6 e6 e6 a6 c5 c6 a6 e6 e6 f6 d4 d6 d6 a6 d4 d6 d6 a6 d6 f4 d5 c6 a6 c6 f4 c6 c6 a6 c6 a4 a5 c4 f6
+	g6 c4 e6 c6 g4 g6 b5 b6 d6 b6 d6 d6 c6 a6 a6 c6 c6 c4 c6 c6 c6 e5 c5 a6 c5 c6 c4 e4 e6 a6 a5 e6 a5 d4 d6 d6 f5 a6 d4 a6 d4 a4 f6 f6 c6 a5 a6 f6 f5 a6 c4 c6 f6 f6 c6 a6
+	g6 g5 c6 e6 c6 e4 g5 e6 g6 e6 g6 g6 d6 b6 g4 d4 d5 g4 g4 d5 d6 d6 b6 d6 e5 a6 e4 e5 e4 a6 e6 e6 a5 c4 c6 c6 a4 c4 a6 e6 e6 c6 e6 e4 c6 c5 a6 a6 c4 c5 c6 a6 a5 c4 a4 c5 a6 a6 c5 c6 a6 c6 c6 c5 f6 d6 d6 a6 d5 f6 d4 a5 f6 d6 d6 a4 a6 a6 d6 a6 f6 d6 d6 d5 a5 d5 d6 a6 c5 a6 c4 a6 a4 c4 c6 f6 f6 f6 c6 c6 c6 a6 a4 c5 c6 a6 c6 a4 c6 c6 c5 f6
+	");*/
 
-/*	// melody2.py
+	/*	// melody2.py
 	m=Miti.new(Server.default,bpm,"
-b6 b6 b6 e5 e5 e5 e5 e5 c6 c6 c6 c6 b5 b5 b5 b5 e5 e5 e5 e5 e5 e5 e5 e5 c5 c5 c5 c5 d5 d5 d5 d5
-e5 e5 e5 a6 a6 a6 a6 a6 a6 a6 a6 a6 d6 d6 d6 d6 g6 g6 g6 g6 g6 g6 g6 g6 a6 a6 a6 a6 b6 b6 b6 b6
-d7 d7 d7 c7 c7 c7 c7 c7 f7 f7 f7 f7 g7 g7 g7 g7 c7 c7 c7 c7 c7 c7 c7 c7 e6 e6 e6 e6 g6 g6 g6 g6
-e3 e3 e3 a3 a3 a3 a3 a3 f3 f3 f3 f3 g3 g3 g3 g3 c3 c3 c3 c3 e3 e3 e3 e3 a3 a3 a3 a3 g3 g3 g3 g3
-");*/
+	b6 b6 b6 e5 e5 e5 e5 e5 c6 c6 c6 c6 b5 b5 b5 b5 e5 e5 e5 e5 e5 e5 e5 e5 c5 c5 c5 c5 d5 d5 d5 d5
+	e5 e5 e5 a6 a6 a6 a6 a6 a6 a6 a6 a6 d6 d6 d6 d6 g6 g6 g6 g6 g6 g6 g6 g6 a6 a6 a6 a6 b6 b6 b6 b6
+	d7 d7 d7 c7 c7 c7 c7 c7 f7 f7 f7 f7 g7 g7 g7 g7 c7 c7 c7 c7 c7 c7 c7 c7 e6 e6 e6 e6 g6 g6 g6 g6
+	e3 e3 e3 a3 a3 a3 a3 a3 f3 f3 f3 f3 g3 g3 g3 g3 c3 c3 c3 c3 e3 e3 e3 e3 a3 a3 a3 a3 g3 g3 g3 g3
+	");*/
 
-/*	// melody3.py
+
+	// melody3.py
 	// Am G F Em7
 	m=Miti.new(Server.default,bpm,"
-e5    d5    f5    e5
-c5    g4    a4    b4
-a3 a3 g3 e3 f3 f3 e3 e3
-a6 a6 b6 d7 c7 c7 b6 b6
-e7 e7 d7 g7 f7 f7 g7 g7
-a7    b7    c7    d7
-c6 a5 e4 c5 e4 a6 e6 g4 g5 b4 g6 b4 b6 g4 d6 d5 e5 a6 c6 e4 a6 f6 f6 a6 g6 e4 b6 g6 g6 g4 e6 g4
-e6 e6 c6 g6 c6 a6 c6 a6 g4 g4 b6 d6 b4 d6 d6 g4 c5 f6 e6 e6 e6 f5 c4 a6 b6 g6 g6 g6 g5 e5 b4 b6
-e6 c4 g6 g4 e4 e6 e6 e6 b7 b6 b7 b4 d4 d6 b4 g6 f6 f7 c6 f5 c7 a4 a5 c6 b6 b6 b6 e6 g4 b7 b6 e7
-");*/
+	e5    d5    f5    e5
+	c5    g4    a4    b4
+	a3 a3 g3 e3 f3 f3 e3 g3
+	a6 a6 b6 d7 c7 c7 b6 b6
+	e7 e7 d7 g7 f7 f7 g7 g7
+	a7    b7    c7    d7
+	c6 a5 e4 c5 e4 a6 e6 g4 g5 b4 g6 b4 b6 g4 d6 d5 e5 a6 c6 e4 a6 f6 f6 a6 g6 e4 b6 g6 g6 g4 e6 g4
+	e6 e6 c6 g6 c6 a6 c6 a6 g4 g4 b6 d6 b4 d6 d6 g4 c5 f6 e6 e6 e6 f5 c4 a6 b6 g6 g6 g6 g5 e5 b4 b6
+	e6 c4 g6 g4 e4 e6 e6 e6 b7 b6 b7 b4 d4 d6 b4 g6 f6 f7 c6 f5 c7 a4 a5 c6 b6 b6 b6 e6 g4 b7 b6 e7
+	");
 
 	m.setCallbackNote({ arg note;
 		["note",note].postln;
@@ -224,7 +230,8 @@ e6 c4 g6 g4 e4 e6 e6 e6 b7 b6 b7 b4 d4 d6 b4 g6 f6 f7 c6 f5 c7 a4 a5 c6 b6 b6 b6
 	}.play;
 });
 )
-o.set("main","reverb",0.4);
+
+o.set("main","reverb",0.5);
 o.set("input","db",0.neg);
 (
 8.do({ arg v;
@@ -235,31 +242,53 @@ o.set("input","db",0.neg);
 
 (
 // Define the number of loops
-var numLoops = 7;
+var numSliders = 2;
 
 // Initialize the GUI window
 var window = Window("Loop Controller", Rect(100, 100, 400,220));
-var sliders = Array.newClear(numLoops);
-var labels = Array.newClear(numLoops);
-var sliderSpec = ControlSpec(-96, 0, \linear, 0.01);
+var sliders = Array.newClear(numSliders);
+var labels = Array.newClear(numSliders);
+var dbSpec = ControlSpec(-96, 0, \linear, 0.01);
+var revSpec = ControlSpec(0, 1, step:0.01);
 // Create sliders and labels for each loop
-numLoops.do { |i|
+numSliders.do { |i|
 	var loopIndex = i + 1; // Adjust for human-readable loop numbering
 	var xPosition = i * 50 + 10; // Position sliders vertically
 
+	switch(i)
+	{ 0 } {
+		labels[0] = StaticText(window, Rect(xPosition-25, 10, 100, 20))
+		.string_("db")
+		.align_(\center);
+		sliders[i] = Slider(window, Rect(xPosition+15, 50, 20,150))
+		.focusColor_(Color.red(alpha:0.2))
+		.background_(Color.rand)
+		.value_(1)
+		.action_({
+			labels[i].string_("db:"+dbSpec.map(sliders[0].value));
+			7.do({ arg v;
+				o.set("loop"++(v+1),"db",dbSpec.map(sliders[0].value));
+			});
+		});
+	}
+	{ 1 } {
+		labels[i] = StaticText(window, Rect(xPosition-25, 10, 100, 20))
+		.string_("rev")
+		.align_(\center);
+		sliders[i] = Slider(window, Rect(xPosition+15, 50, 20,150))
+		.focusColor_(Color.red(alpha:0.2))
+		.background_(Color.rand)
+		.value_(1)
+		.action_({
+			labels[i].string_("rev:"+revSpec.map(sliders[i].value));
+			o.set("main","reverb",revSpec.map(sliders[i].value));
+		});
+	}
+	{ };
 	// Create a label for the loop
-	labels[i] = StaticText(window, Rect(xPosition, 10, 50, 20))
-	.string_(loopIndex)
-	.align_(\center);
 
-	sliders[i] = Slider(window, Rect(xPosition+15, 50, 20,150))
-	.focusColor_(Color.red(alpha:0.2))
-	.background_(Color.rand)
-	.value_(1)
-	.action_({
-		labels[i].string_(sliderSpec.map(sliders[i].value));
-		o.set("loop"++loopIndex,"db",sliderSpec.map(sliders[i].value));
-	});
+
+
 };
 
 // Show the window
