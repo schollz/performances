@@ -227,7 +227,7 @@ c5 g6 e6 c6 c4 c4 e6 e6 c6 c4 a4 e6 e6 a6 f6 e6 e4 c6 g6 e5 g6 c6 g6 e6 b5 d5 b6
 
 	Routine {
 		0.1.wait;
-		o.set("main","reverb",0.2);
+		o.set("main","reverb",0.35);
 	}.play;
 });
 )
