@@ -3,7 +3,7 @@
 t = Server.default.options;
 t.numInputBusChannels = 2;
 s.waitForBoot({
-	var bpm = 120;//90;
+	var bpm = 90;
 	var recCount = 0;
 	var doRecord = true;
 	var loopNum = 0;
@@ -13,6 +13,7 @@ s.waitForBoot({
 	var cscale=Scale.major.degrees;
 	var handOctave = 0;
 	var handNote = 0;
+	var noteLast = 0;
 
 	7.do({ arg octave;
 		cscale.do({arg v;
@@ -21,14 +22,14 @@ s.waitForBoot({
 	});
 
 	p = SerialPort.new(
-		"/dev/ttyACM0",
+		"/dev/ttyACM1",
 		baudrate: 115200
 	);
 	~crowSet = {
 		arg port, volts;
 		p.putAll("output["++port++"].volts="++volts++";\n");
 	};
-	p.putAll("output[4].action='{  to(10,"++(60/bpm/2)++",logarithmic), to(0,"++(60/bpm)++",exponential) }';\n");
+	p.putAll("output[4].action='{  to(10,"++(60/bpm/8)++",logarithmic), to(0.25,"++(60/bpm/2)++",exponential) }';\n");
 
 
 	// synthdefs
@@ -76,31 +77,75 @@ e4 a6 a6 c6 c6 a6 c6 a5 f5 c5 f6 c6 e6 f6 a4 c6 g5 c4 c4 e6 c4 g5 g6 c5 g6 g6 g6
 c5 g6 e6 c6 c4 c4 e6 e6 c6 c4 a4 e6 e6 a6 f6 e6 e4 c6 g6 e5 g6 c6 g6 e6 b5 d5 b6 g6 g6 d6 b6 b6
 ");
 
-/*	m=Miti.new(Server.default,bpm,"
-d5  a5  a5  e5  g#5 f#5 f#5 f#6 c#6 f#6 f#6 g#6 a6  d7
-a3  f#3 f#3 f#3 c#3 a3  a3  d3  f#3 c#3 c#3 c#3 f#3 f#3
-f#6 c#7 c#7 a6  e6  d6  d6  a6  a6  a5  a5  e6  d6  a5
-a4  a4  a4  e4  g#4 a5  a5  d5  f#5 d5  c#5 c#5 f#5 f#5
-d7  f#7 f#7 a7  e7  d7  d7  d7  f#7 c#7 f#7 e7  d7  a7
-a7  a7  a7  e7  g#7 f#7 f#7 a7  a7  a7  a7  e7  a7  d7
+	/*	m=Miti.new(Server.default,bpm,"
+	d5  a5  a5  e5  g#5 f#5 f#5 f#6 c#6 f#6 f#6 g#6 a6  d7
+	a3  f#3 f#3 f#3 c#3 a3  a3  d3  f#3 c#3 c#3 c#3 f#3 f#3
+	f#6 c#7 c#7 a6  e6  d6  d6  a6  a6  a5  a5  e6  d6  a5
+	a4  a4  a4  e4  g#4 a5  a5  d5  f#5 d5  c#5 c#5 f#5 f#5
+	d7  f#7 f#7 a7  e7  d7  d7  d7  f#7 c#7 f#7 e7  d7  a7
+	a7  a7  a7  e7  g#7 f#7 f#7 a7  a7  a7  a7  e7  a7  d7
+	");*/
+	/*	m=Miti.new(Server.default,bpm,"
+	d5 e5  a4 a4  f4 f4  c5 c5
+	b4 c5  d4 d4  a5 a5  e5 e5
+	g6 a6  f6 f6  c6 c6  g5 g5
+	");*/
+
+	// melody.py
+	m=Miti.new(Server.default,bpm,"
+c4 c4 c4 b4 b4 b4 a4 a4 a4 a4 a4 a4 a4 a4 a4 a4 d4 d4 d4 d4 d4 d4 f4 f4 f4 f4 f4 f4
+e6 e6 e6 g6 g6 g6 c6 c6 c6 c5 c6 c6 c6 c6 c6 c6 f5 f5 f5 f5 f5 f5 a5 a5 a5 a5 a5 a5
+g6 g6 g6 d7 d7 d7 e7 e7 e7 e5 e7 e7 e7 e7 e7 e7 a6 a6 a6 a6 a6 a6 c7 c7 c7 c7 c7 c7
+c3 c3 c3 g3 g3 g3 a3 a3 a3 a3 a3 a3 a3 c4 c4 c4 d4 d4 d4 e4 e4 e4 f3 f3 f3 f3 f3 f3
+
+e4 e4 e4 d6 d6 d6 c6 c6 c6 c6 c6 c6 c6 c6 c6 c6 f5 f5 f5 f5 f5 f5 f6 f6 f6 f6 f6 f6
+g6 g6 g6 b4 b4 b4 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a6 a6 a6 a6 a6 a6
+c7 c7 c7 b5 b5 b5 a6 a6 a6 a6 a6 a6 a6 a6 a6 a6 d6 d6 d6 d6 d6 d6 f6 c6 c6 c6 c6 c6
+
+e6 e5 c6 c6 c6 c6 b6 b6 g6 b5 d6 g6 e6 a6 e6 a5 c6 e6 a6 a4 c5 e5 a5 c5 e6 c6 a5 a6 a6 e5 a5 e4 d6 d6 a6 d6 a5 a5 f6 a6 d6 a5 a6 f5 c6 f6 c4 f4 c5 c6 a6 c4 f4 f6 a5 f4
+g5 e5 g6 g6 c6 c6 d6 g5 b6 b6 d6 g4 c5 c5 a6 c5 a6 e5 e6 e6 a4 c6 c6 a6 e6 e6 a6 c5 c6 a6 e6 e6 f6 d4 d6 d6 a6 d4 d6 d6 a6 d6 f4 d5 c6 a6 c6 f4 c6 c6 a6 c6 a4 a5 c4 f6
+g6 c4 e6 c6 g4 g6 b5 b6 d6 b6 d6 d6 c6 a6 a6 c6 c6 c4 c6 c6 c6 e5 c5 a6 c5 c6 c4 e4 e6 a6 a5 e6 a5 d4 d6 d6 f5 a6 d4 a6 d4 a4 f6 f6 c6 a5 a6 f6 f5 a6 c4 c6 f6 f6 c6 a6
+g6 g5 c6 e6 c6 e4 g5 e6 g6 e6 g6 g6 d6 b6 g4 d4 d5 g4 g4 d5 d6 d6 b6 d6 e5 a6 e4 e5 e4 a6 e6 e6 a5 c4 c6 c6 a4 c4 a6 e6 e6 c6 e6 e4 c6 c5 a6 a6 c4 c5 c6 a6 a5 c4 a4 c5 a6 a6 c5 c6 a6 c6 c6 c5 f6 d6 d6 a6 d5 f6 d4 a5 f6 d6 d6 a4 a6 a6 d6 a6 f6 d6 d6 d5 a5 d5 d6 a6 c5 a6 c4 a6 a4 c4 c6 f6 f6 f6 c6 c6 c6 a6 a4 c5 c6 a6 c6 a4 c6 c6 c5 f6
+");
+
+/*	// melody2.py
+	m=Miti.new(Server.default,bpm,"
+b6 b6 b6 e5 e5 e5 e5 e5 c6 c6 c6 c6 b5 b5 b5 b5 e5 e5 e5 e5 e5 e5 e5 e5 c5 c5 c5 c5 d5 d5 d5 d5
+e5 e5 e5 a6 a6 a6 a6 a6 a6 a6 a6 a6 d6 d6 d6 d6 g6 g6 g6 g6 g6 g6 g6 g6 a6 a6 a6 a6 b6 b6 b6 b6
+d7 d7 d7 c7 c7 c7 c7 c7 f7 f7 f7 f7 g7 g7 g7 g7 c7 c7 c7 c7 c7 c7 c7 c7 e6 e6 e6 e6 g6 g6 g6 g6
+e3 e3 e3 a3 a3 a3 a3 a3 f3 f3 f3 f3 g3 g3 g3 g3 c3 c3 c3 c3 e3 e3 e3 e3 a3 a3 a3 a3 g3 g3 g3 g3
 ");*/
-/*	m=Miti.new(Server.default,bpm,"
-d5 e5  a4 a4  f4 f4  c5 c5
-b4 c5  d4 d4  a5 a5  e5 e5
-g6 a6  f6 f6  c6 c6  g5 g5
+
+/*	// melody3.py
+	// Am G F Em7
+	m=Miti.new(Server.default,bpm,"
+e5    d5    f5    e5
+c5    g4    a4    b4
+a3 a3 g3 e3 f3 f3 e3 e3
+a6 a6 b6 d7 c7 c7 b6 b6
+e7 e7 d7 g7 f7 f7 g7 g7
+a7    b7    c7    d7
+c6 a5 e4 c5 e4 a6 e6 g4 g5 b4 g6 b4 b6 g4 d6 d5 e5 a6 c6 e4 a6 f6 f6 a6 g6 e4 b6 g6 g6 g4 e6 g4
+e6 e6 c6 g6 c6 a6 c6 a6 g4 g4 b6 d6 b4 d6 d6 g4 c5 f6 e6 e6 e6 f5 c4 a6 b6 g6 g6 g6 g5 e5 b4 b6
+e6 c4 g6 g4 e4 e6 e6 e6 b7 b6 b7 b4 d4 d6 b4 g6 f6 f7 c6 f5 c7 a4 a5 c6 b6 b6 b6 e6 g4 b7 b6 e7
 ");*/
 
 	m.setCallbackNote({ arg note;
 		["note",note].postln;
+		if (noteLast!=note,{
+			"output4".postln;
+			p.putAll("output[4]();\n");
+			noteLast = note;
+		});
 		if (loopNum<loopNumMax,{
 			~crowSet.(1,(note-36)/12);
 		});
-		p.putAll("output[4]();\n");
 	});
 	m.setCallbackMeasure({ arg measure;
 		["measure",measure].postln;
 		o.set("metronome","t_trig",1);
 		loopNum = loopNum + 1;
+
 		if (loopNum<loopRecordMax,{
 			o.record("loop"++loopNum.mod(8),16.0 * 60 / bpm);
 			/*			if (loopNum==1,{
@@ -174,11 +219,13 @@ g6 a6  f6 f6  c6 c6  g5 g5
 	// });
 
 	Routine {
-		1.wait;
+		0.1.wait;
 		o.set("main","reverb",0.4);
 	}.play;
 });
 )
+o.set("main","reverb",0.4);
+o.set("input","db",0.neg);
 (
 8.do({ arg v;
 	var loop=(v+1);

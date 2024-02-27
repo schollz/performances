@@ -206,10 +206,10 @@ Ouroboros2 {
 		}).send(server);
 
 		SynthDef("input",{
-			arg busOut,busRecord,lpf=135, db=0;
+			arg busOut,busRecord,lpf=135, db=3.neg;
 			var snd, incomingFreq, hasFreq, freq;
 
-			snd = SoundIn.ar([0,1]) * db.dbamp;
+			snd = SoundIn.ar([0,1]);
 			snd = snd + In.ar(busRecord,2);
 			// temp
 			// snd = Pan2.ar(Mix.new(snd));
@@ -226,7 +226,7 @@ Ouroboros2 {
 			snd = RLPF.ar(snd,lpf.midicps,0.707);
 
 			Out.ar(busRecord,snd);
-			Out.ar(busOut,snd);
+			Out.ar(busOut,snd * db.dbamp);
 		}).send(server);
 
 		// metronome pulses at the beginning of each phrase
