@@ -11,6 +11,7 @@ Ouroboros2 {
 	var saveDir;
 	var doSave;
 	var cvCallback;
+	var loopCount;
 
 	*new { arg argServer;
 		^super.new.init(argServer);
@@ -40,6 +41,7 @@ Ouroboros2 {
 						busMetronome: buses.at("metronome"),
 						busCount: buses.at("count"),
 						bufDisk: bdisk,
+						id: loopCount,
 					];
 					if (params.at(id).notNil,{
 						params.at(id).keysValuesDo({ arg k, v;
@@ -60,6 +62,7 @@ Ouroboros2 {
 						bdisk.free;
 					}));
 					NodeWatcher.register(syns.at(id));
+					loopCount = loopCount + 1;
 				});
 			}.play;
 		});
@@ -169,6 +172,7 @@ Ouroboros2 {
 		server = argServer;
 		measures = 0;
 		doSave = false;
+		loopCount = 0;
 
 		// initialize variables
 		syns = Dictionary.new();
@@ -270,9 +274,11 @@ Ouroboros2 {
 		}).send(server);
 
 		SynthDef("looperAudio",{
-			arg busMetronome, busOut, busCount, buf, db=0, pan=0, gate=1, bufDisk;
+			arg busMetronome, busOut, busCount, buf, db=0, pan=0, gate=1, bufDisk, id;
 			var playhead, snd0, snd1, snd;
 			var tr=In.kr(busMetronome,1);
+			var ampOsc = SinOsc.kr(1/Rand(25,35),Rand(0,3.14));
+			var panOsc = SinOsc.kr(1/Rand(25,35),Rand(0,3.14));
 			db = VarLag.kr(db,1,warp:\sine);
 			playhead = ToggleFF.kr(tr);
 			snd0 = PlayBuf.ar(2,buf,rate:BufRateScale.ir(buf),loop:1,trigger:1-playhead);
@@ -280,10 +286,10 @@ Ouroboros2 {
 			snd = SelectX.ar(VarLag.kr(playhead,1.0,warp:\linear),[snd0,snd1]);
 
 			// random amplitude
-			snd = snd * SinOsc.kr(1.0/Rand(5,11)).range(8.neg,3).dbamp;
+			snd = snd * ampOsc.range(8.neg,3).dbamp;
 
 			// random pan
-			snd = Balance2.ar(snd[0],snd[1],pan + SinOsc.kr(1/Rand(5,11),mul:1));
+			snd = Balance2.ar(snd[0],snd[1],pan + panOsc);
 
 			DiskOut.ar(bufDisk, snd * db.dbamp);
 			// adsr
@@ -291,11 +297,20 @@ Ouroboros2 {
 
 			SendReply.kr(Changed.kr(playhead),"/playhead",[buf]);
 
+			SendReply.kr(Impulse.kr(60), "/loopinfo", [id, panOsc, ampOsc]);
+
 			Out.kr(busCount,DC.kr(1));
 			Out.ar(busOut,snd*db.dbamp);
 		}).send(server);
 
 		// setup oscs
+		oscs.put("loopinfo",OSCFunc({ arg msg;
+			var loopid = msg[3].asInteger;
+			var x = msg[4].clip(-1,1);
+			var y = msg[5].clip(-1,1);
+			var add = NetAddr.new("127.0.0.1",8123);
+			add.sendMsg("/loopinfo",loopid,x,y);
+		},"/loopinfo"));
 		oscs.put("metronome",OSCFunc({ arg msg, time, addr, recvPort;
 			// [msg, time, addr, recvPort].postln;
 			measures = measures + 1;
@@ -367,6 +382,7 @@ Ouroboros2 {
 			busOut: buses.at("main"),
 			busMetronome: buses.at("metronome"),
 			busCount: buses.at("count"),
+			id: id,
 		];
 		syns.put(id,Synth.after(syns.at("metronome"),"looperAudio",args));
 	}
