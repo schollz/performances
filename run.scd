@@ -18,11 +18,12 @@ s.waitForBoot({
 	7.do({ arg octave;
 		cscale.do({arg v;
 			scale=scale.add(24+v+(octave*12));
+
 		});
 	});
 
 	p = SerialPort.new(
-		"/dev/ttyACM1",
+		"/dev/ttyACM0",
 		baudrate: 115200
 	);
 	~crowSet = {
@@ -122,19 +123,19 @@ c5 g6 e6 c6 c4 c4 e6 e6 c6 c4 a4 e6 e6 a6 f6 e6 e4 c6 g6 e5 g6 c6 g6 e6 b5 d5 b6
 	");*/
 
 
-	// melody3.py
-	// Am G F Em7
-	m=Miti.new(Server.default,bpm,"
-	e5    d5    f5    e5
-	c5    g4    a4    b4
-	a3 a3 g3 e3 f3 f3 e3 g3
-	a6 a6 b6 d7 c7 c7 b6 b6
-	e7 e7 d7 g7 f7 f7 g7 g7
-	a7    b7    c7    d7
-	c6 a5 e4 c5 e4 a6 e6 g4 g5 b4 g6 b4 b6 g4 d6 d5 e5 a6 c6 e4 a6 f6 f6 a6 g6 e4 b6 g6 g6 g4 e6 g4
-	e6 e6 c6 g6 c6 a6 c6 a6 g4 g4 b6 d6 b4 d6 d6 g4 c5 f6 e6 e6 e6 f5 c4 a6 b6 g6 g6 g6 g5 e5 b4 b6
-	e6 c4 g6 g4 e4 e6 e6 e6 b7 b6 b7 b4 d4 d6 b4 g6 f6 f7 c6 f5 c7 a4 a5 c6 b6 b6 b6 e6 g4 b7 b6 e7
-	");
+	// // melody3.py
+	// // Am G F Em7
+	// m=Miti.new(Server.default,bpm,"
+	// 	e5    d5    f5    e5
+	// 	c5    g4    a4    b4
+	// 	a3 a3 g3 e3 f3 f3 e3 g3
+	// 	a6 a6 b6 d7 c7 c7 b6 b6
+	// 	e7 e7 d7 g7 f7 f7 g7 g7
+	// 	a7    b7    c7    d7
+	// 	c6 a5 e4 c5 e4 a6 e6 g4 g5 b4 g6 b4 b6 g4 d6 d5 e5 a6 c6 e4 a6 f6 f6 a6 g6 e4 b6 g6 g6 g4 e6 g4
+	// 	e6 e6 c6 g6 c6 a6 c6 a6 g4 g4 b6 d6 b4 d6 d6 g4 c5 f6 e6 e6 e6 f5 c4 a6 b6 g6 g6 g6 g5 e5 b4 b6
+	// 	e6 c4 g6 g4 e4 e6 e6 e6 b7 b6 b7 b4 d4 d6 b4 g6 f6 f7 c6 f5 c7 a4 a5 c6 b6 b6 b6 e6 g4 b7 b6 e7
+	// ");
 
 	m.setCallbackNote({ arg note;
 		["note",note].postln;
@@ -226,7 +227,7 @@ c5 g6 e6 c6 c4 c4 e6 e6 c6 c4 a4 e6 e6 a6 f6 e6 e4 c6 g6 e5 g6 c6 g6 e6 b5 d5 b6
 
 	Routine {
 		0.1.wait;
-		o.set("main","reverb",0.4);
+		o.set("main","reverb",0.2);
 	}.play;
 });
 )

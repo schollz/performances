@@ -98,6 +98,25 @@
             });
 
 
+            {
+                let index = 10;
+                breathScale = 1 + 400 * sin(frameCount / 30 / 4);
+                let mappedX = ((0 + 1) / 2) * (width); // Map from -1 to 1 into 0 to width
+                let mappedY = ((0 + 1) / 2) * (height); // Map from -1 to 1 into 0 to height
+                fill('#' + colors[index % colors.length]);
+                // Begin drawing a sketchy circle using Perlin noise
+                beginShape();
+                for (let angle = 0; angle < TWO_PI; angle += 0.1) {
+                    let offset = map(noise(cos(angle) * 0.5 + 1, sin(angle) * 0.5 + 1, frameCount * 0.005 + index), 0, 1, -50, 50);
+                    let noisyRadius = breathScale + offset + noise(frameCount / 30 * 0.01 + index) * 100;
+                    let x = mappedX + cos(angle) * noisyRadius;
+                    let y = mappedY + sin(angle) * noisyRadius;
+                    vertex(x, y);
+                }
+                endShape(CLOSE);
+            }
+
+
             blendMode(BLEND);
             // no fill
             stroke(0);
@@ -121,6 +140,27 @@
                     endShape(CLOSE);
                 }
             });
+
+
+
+            {
+
+                let index = 11;
+                breathScale = 1 + 400 * sin(frameCount / 30 / 4);
+                let mappedX = ((0 + 1) / 2) * (width); // Map from -1 to 1 into 0 to width
+                let mappedY = ((0 + 1) / 2) * (height); // Map from -1 to 1 into 0 to height
+                // Begin drawing a sketchy circle using Perlin noise
+                beginShape();
+                for (let angle = 0; angle < TWO_PI; angle += 0.1) {
+                    let offset = map(noise(cos(angle) * 0.5 + 1, sin(angle) * 0.5 + 1, frameCount * 0.005 + index), 0, 1, -50, 50);
+                    let noisyRadius = breathScale + offset + noise(frameCount / 30 * 0.01 + index) * 100;
+                    let x = mappedX + cos(angle) * noisyRadius;
+                    let y = mappedY + sin(angle) * noisyRadius;
+                    vertex(x, y);
+                }
+                endShape(CLOSE);
+            }
+
         }
 
         // Resize the canvas when the window is resized
