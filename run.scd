@@ -21,9 +21,8 @@ s.waitForBoot({
 
 		});
 	});
-
 	p = SerialPort.new(
-		"/dev/ttyACM0",
+		"/dev/ttyACM1",
 		baudrate: 115200
 	);
 	~crowSet = {
@@ -97,7 +96,7 @@ c5 g6 e6 c6 c4 c4 e6 e6 c6 c4 a4 e6 e6 a6 f6 e6 e4 c6 g6 e5 g6 c6 g6 e6 b5 d5 b6
 	g6 a6  f6 f6  c6 c6  g5 g5
 	");*/
 
-/*		// melody.py
+	/*// melody.py
 	m=Miti.new(Server.default,bpm,"
 	c4 c4 c4 b4 b4 b4 a4 a4 a4 a4 a4 a4 a4 a4 a4 a4 d4 d4 d4 d4 d4 d4 f4 f4 f4 f4 f4 f4
 	e6 e6 e6 g6 g6 g6 c6 c6 c6 c5 c6 c6 c6 c6 c6 c6 f5 f5 f5 f5 f5 f5 a5 a5 a5 a5 a5 a5
@@ -123,19 +122,19 @@ c5 g6 e6 c6 c4 c4 e6 e6 c6 c4 a4 e6 e6 a6 f6 e6 e4 c6 g6 e5 g6 c6 g6 e6 b5 d5 b6
 	");*/
 
 
-	// // melody3.py
-	// // Am G F Em7
-	// m=Miti.new(Server.default,bpm,"
-	// 	e5    d5    f5    e5
-	// 	c5    g4    a4    b4
-	// 	a3 a3 g3 e3 f3 f3 e3 g3
-	// 	a6 a6 b6 d7 c7 c7 b6 b6
-	// 	e7 e7 d7 g7 f7 f7 g7 g7
-	// 	a7    b7    c7    d7
-	// 	c6 a5 e4 c5 e4 a6 e6 g4 g5 b4 g6 b4 b6 g4 d6 d5 e5 a6 c6 e4 a6 f6 f6 a6 g6 e4 b6 g6 g6 g4 e6 g4
-	// 	e6 e6 c6 g6 c6 a6 c6 a6 g4 g4 b6 d6 b4 d6 d6 g4 c5 f6 e6 e6 e6 f5 c4 a6 b6 g6 g6 g6 g5 e5 b4 b6
-	// 	e6 c4 g6 g4 e4 e6 e6 e6 b7 b6 b7 b4 d4 d6 b4 g6 f6 f7 c6 f5 c7 a4 a5 c6 b6 b6 b6 e6 g4 b7 b6 e7
-	// ");
+/*	// melody3.py
+	// Am G F Em7
+	m=Miti.new(Server.default,bpm,"
+		e5    d5    f5    e5
+		c5    g4    a4    b4
+		a3 a3 g3 e3 f3 f3 e3 g3
+		a6 a6 b6 d7 c7 c7 b6 b6
+		e7 e7 d7 g7 f7 f7 g7 g7
+		a7    b7    c7    d7
+		c6 a5 e4 c5 e4 a6 e6 g4 g5 b4 g6 b4 b6 g4 d6 d5 e5 a6 c6 e4 a6 f6 f6 a6 g6 e4 b6 g6 g6 g4 e6 g4
+		e6 e6 c6 g6 c6 a6 c6 a6 g4 g4 b6 d6 b4 d6 d6 g4 c5 f6 e6 e6 e6 f5 c4 a6 b6 g6 g6 g6 g5 e5 b4 b6
+		e6 c4 g6 g4 e4 e6 e6 e6 b7 b6 b7 b4 d4 d6 b4 g6 f6 f7 c6 f5 c7 a4 a5 c6 b6 b6 b6 e6 g4 b7 b6 e7
+	");*/
 
 	m.setCallbackNote({ arg note;
 		["note",note].postln;
@@ -226,72 +225,23 @@ c5 g6 e6 c6 c4 c4 e6 e6 c6 c4 a4 e6 e6 a6 f6 e6 e4 c6 g6 e5 g6 c6 g6 e6 b5 d5 b6
 	// });
 
 	Routine {
+		if (u.notNil,{
+			u.free;
+		});
+		u=	OSCFunc({ arg msg, time, addr, recvPort;
+			var index=msg[1].asInteger;
+			var value=msg[2].asFloat;
+			[index,value].postln;
+			switch(index)
+			{ 0 } { o.set("main","reverb",value/100); }
+			{ o.set("loop"++index,"db",value.linlin(0,100,-64,0)); }
+			{ };
+			// o.set("main","reverb",0.5);
+			// o.set("input","db",0.neg);
+
+		}, '/slider',);
 		0.1.wait;
-		o.set("main","reverb",0.35);
+		o.set("main","reverb",0.5);
 	}.play;
 });
-)
-
-o.set("main","reverb",0.5);
-o.set("input","db",0.neg);
-(
-8.do({ arg v;
-	var loop=(v+1);
-	o.set("loop"++loop,"db",-96);
-});
-)
-
-(
-// Define the number of loops
-var numSliders = 2;
-
-// Initialize the GUI window
-var window = Window("Loop Controller", Rect(100, 100, 400,220));
-var sliders = Array.newClear(numSliders);
-var labels = Array.newClear(numSliders);
-var dbSpec = ControlSpec(-96, 0, \linear, 0.01);
-var revSpec = ControlSpec(0, 1, step:0.01);
-// Create sliders and labels for each loop
-numSliders.do { |i|
-	var loopIndex = i + 1; // Adjust for human-readable loop numbering
-	var xPosition = i * 50 + 10; // Position sliders vertically
-
-	switch(i)
-	{ 0 } {
-		labels[0] = StaticText(window, Rect(xPosition-25, 10, 100, 20))
-		.string_("db")
-		.align_(\center);
-		sliders[i] = Slider(window, Rect(xPosition+15, 50, 20,150))
-		.focusColor_(Color.red(alpha:0.2))
-		.background_(Color.rand)
-		.value_(1)
-		.action_({
-			labels[i].string_("db:"+dbSpec.map(sliders[0].value));
-			7.do({ arg v;
-				o.set("loop"++(v+1),"db",dbSpec.map(sliders[0].value));
-			});
-		});
-	}
-	{ 1 } {
-		labels[i] = StaticText(window, Rect(xPosition-25, 10, 100, 20))
-		.string_("rev")
-		.align_(\center);
-		sliders[i] = Slider(window, Rect(xPosition+15, 50, 20,150))
-		.focusColor_(Color.red(alpha:0.2))
-		.background_(Color.rand)
-		.value_(1)
-		.action_({
-			labels[i].string_("rev:"+revSpec.map(sliders[i].value));
-			o.set("main","reverb",revSpec.map(sliders[i].value));
-		});
-	}
-	{ };
-	// Create a label for the loop
-
-
-
-};
-
-// Show the window
-window.front;
 )

@@ -14,9 +14,13 @@ import (
 
 var mutex sync.Mutex
 var connections = make(map[*websocket.Conn]bool)
+var supercollider *osc.Client
 
 func main() {
 	log.SetLevel("debug")
+
+	supercollider = osc.NewClient("127.0.0.1", 57120)
+
 	go func() {
 		addr := "127.0.0.1:8123"
 		d := osc.NewStandardDispatcher()
@@ -24,14 +28,16 @@ func main() {
 			loopNum := msg.Arguments[0].(int32)
 			x := msg.Arguments[1].(float32)
 			y := msg.Arguments[2].(float32)
+			db := msg.Arguments[3].(int32)
 			mutex.Lock()
 			for c := range connections {
 				err := c.WriteJSON(struct {
 					LoopNum int32   `json:"loop"`
 					X       float32 `json:"x"`
 					Y       float32 `json:"y"`
+					DB      int32   `json:"db"`
 				}{
-					loopNum, x, y,
+					loopNum, x, y, db,
 				})
 				if err != nil {
 					log.Error(err)
@@ -86,6 +92,12 @@ var wsupgrader = websocket.Upgrader{
 	},
 }
 
+type Message struct {
+	Action string `json:"action"`
+	Number int32  `json:"number"`
+	Index  int32  `json:"index"`
+}
+
 func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 	c, errUpgrade := wsupgrader.Upgrade(w, r, nil)
 	if errUpgrade != nil {
@@ -103,17 +115,19 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) (err error) {
 	}()
 
 	for {
-		var p interface{}
+		var p Message
 		err := c.ReadJSON(&p)
 		if err != nil {
 			log.Debug("read:", err)
 			break
 		}
-		log.Debugf("recv: %v", p)
-		c.WriteJSON(struct{ Message string }{
-			"hello, browser",
-		})
-
+		if p.Action == "slider" {
+			log.Debugf("%d: %v", p.Index, p.Number)
+			msg := osc.NewMessage("/slider")
+			msg.Append(int32(p.Index))
+			msg.Append(p.Number)
+			supercollider.Send(msg)
+		}
 	}
 	return
 }

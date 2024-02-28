@@ -279,7 +279,7 @@ Ouroboros2 {
 			var tr=In.kr(busMetronome,1);
 			var ampOsc = SinOsc.kr(1/Rand(25,35),Rand(0,3.14));
 			var panOsc = SinOsc.kr(1/Rand(25,35),Rand(0,3.14));
-			db = VarLag.kr(db,1,warp:\sine);
+			db = Lag.kr(db,0.2);
 			playhead = ToggleFF.kr(tr);
 			snd0 = PlayBuf.ar(2,buf,rate:BufRateScale.ir(buf),loop:1,trigger:1-playhead);
 			snd1 = PlayBuf.ar(2,buf,rate:BufRateScale.ir(buf),loop:1,trigger:playhead);
@@ -297,7 +297,7 @@ Ouroboros2 {
 
 			SendReply.kr(Changed.kr(playhead),"/playhead",[buf]);
 
-			SendReply.kr(Impulse.kr(60), "/loopinfo", [id, panOsc, ampOsc]);
+			SendReply.kr(Impulse.kr(60), "/loopinfo", [id, panOsc, ampOsc, db]);
 
 			Out.kr(busCount,DC.kr(1));
 			Out.ar(busOut,snd*db.dbamp);
@@ -308,8 +308,9 @@ Ouroboros2 {
 			var loopid = msg[3].asInteger;
 			var x = msg[4].clip(-1,1);
 			var y = msg[5].clip(-1,1);
+			var db = msg[6].round.asInteger.clip(-96,6);
 			var add = NetAddr.new("127.0.0.1",8123);
-			add.sendMsg("/loopinfo",loopid,x,y);
+			add.sendMsg("/loopinfo",loopid,x,y,db);
 		},"/loopinfo"));
 		oscs.put("metronome",OSCFunc({ arg msg, time, addr, recvPort;
 			// [msg, time, addr, recvPort].postln;
