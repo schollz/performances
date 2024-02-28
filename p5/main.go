@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -76,9 +76,10 @@ func handle(w http.ResponseWriter, r *http.Request) (err error) {
 	// very special paths
 	if r.URL.Path == "/ws" {
 		return handleWebsocket(w, r)
+	} else if strings.HasPrefix(r.URL.Path, "/static/") {
+		http.ServeFile(w, r, r.URL.Path[1:])
 	} else {
-		b, _ := os.ReadFile("index.html")
-		w.Write(b)
+		http.ServeFile(w, r, "index.html")
 	}
 
 	return
