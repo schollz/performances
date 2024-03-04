@@ -277,8 +277,8 @@ Ouroboros2 {
 			arg busMetronome, busOut, busCount, buf, db=0, pan=0, gate=1, bufDisk, id;
 			var playhead, snd0, snd1, snd;
 			var tr=In.kr(busMetronome,1);
-			var ampOsc = SinOsc.kr(1/Rand(25,35),Rand(0,3.14));
-			var panOsc = SinOsc.kr(1/Rand(25,35),Rand(0,3.14));
+			var ampOsc = SinOsc.kr(1/Rand(45,55),Rand(0,3.14));
+			var panOsc = SinOsc.kr(1/Rand(45,55),Rand(0,3.14));
 			db = Lag.kr(db,0.2);
 			playhead = ToggleFF.kr(tr);
 			snd0 = PlayBuf.ar(2,buf,rate:BufRateScale.ir(buf),loop:1,trigger:1-playhead);

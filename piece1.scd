@@ -3,7 +3,7 @@
 t = Server.default.options;
 t.numInputBusChannels = 2;
 s.waitForBoot({
-	var bpm = 90;
+	var bpm = 80;
 	var recCount = 0;
 	var doRecord = true;
 	var loopNum = 0;
@@ -18,9 +18,9 @@ s.waitForBoot({
 	7.do({ arg octave;
 		cscale.do({arg v;
 			scale=scale.add(24+v+(octave*12));
-
 		});
 	});
+
 	p = SerialPort.new(
 		"/dev/ttyACM0",
 		baudrate: 115200
@@ -29,7 +29,7 @@ s.waitForBoot({
 		arg port, volts;
 		p.putAll("output["++port++"].volts="++volts++";\n");
 	};
-	p.putAll("output[4].action='{  to(10,"++(60/bpm/8)++",logarithmic), to(0.25,"++(60/bpm/2)++",exponential) }';\n");
+	p.putAll("output[4].action='{  to(10,"++(60/bpm/8)++",logarithmic), to(0.25,"++(60/bpm)++",exponential) }';\n");
 
 
 	// synthdefs
@@ -126,19 +126,31 @@ c5 g6 e6 c6 c4 c4 e6 e6 c6 c4 a4 e6 e6 a6 f6 e6 e4 c6 g6 e5 g6 c6 g6 e6 b5 d5 b6
 	// melody3.py
 	// Am G F Em7
 	m=Miti.new(Server.default,bpm,"
-		e5    d5    f5    e5
+        e5    d5    f5    e5
 		c5    g4    a4    b4
 		a3 a3 g3 e3 f3 f3 e3 g3
 		a6 a6 b6 d7 c7 c7 b6 b6
+        c4    b3    c4    g4
 		e7 e7 d7 g7 f7 f7 g7 g7
 		a7    b7    c7    d7
-        c4    b3    c4    g4
 		c6 a5 e4 c5 e4 a6 e6 g4 g5 b4 g6 b4 b6 g4 d6 d5 e5 a6 c6 e4 a6 f6 f6 a6 g6 e4 b6 g6 g6 g4 e6 g4
 		c6 a5 e4 c5 e4 a6 e6 g4 g5 b4 g6 b4 b6 g4 d6 d5 e5 a6 c6 e4 a6 f6 f6 a6 g6 e4 b6 g6 g6 g4 e6 g4
 		e6 e6 c6 g6 c6 a6 c6 a6 g4 g4 b6 d6 b4 d6 d6 g4 c5 f6 e6 e6 e6 f5 c4 a6 b6 g6 g6 g6 g5 e5 b4 b6
 		e6 e6 c6 g6 c6 a6 c6 a6 g4 g4 b6 d6 b4 d6 d6 g4 c5 f6 e6 e6 e6 f5 c4 a6 b6 g6 g6 g6 g5 e5 b4 b6
-		e6 c4 g6 g4 e4 e6 e6 e6 b7 b6 b7 b4 d4 d6 b4 g6 f6 f7 c6 f5 c7 a4 a5 c6 b6 b6 b6 e6 g4 b7 b6 e7
-		e6 c4 g6 g4 e4 e6 e6 e6 b7 b6 b7 b4 d4 d6 b4 g6 f6 f7 c6 f5 c7 a4 a5 c6 b6 b6 b6 e6 g4 b7 b6 e7
+c7 c4 e5 a6 a4 e6 e5 a7 c6 a7 e5 a6 g6 a5 a4 g5 b4 b7 g6 b6 g7 g7 g4 b7 d7 g5 d7 b5 d6 b6 d4 g6 a5 c7 c6 f5 c4 c6 a6 a7 e7 a4 c4 a5 c6 a7 c4 a6 g4 g6 g6 b6 e6 b6 g7 g6 b7 g6 g6 b7 e4 e6 g6 e7
+c7 c4 e5 a6 a4 e6 e5 a7 c6 a7 e5 a6 g6 a5 a4 g5 b4 b7 g6 b6 g7 g7 g4 b7 d7 g5 d7 b5 d6 b6 d4 g6 a5 c7 c6 f5 c4 c6 a6 a7 e7 a4 c4 a5 c6 a7 c4 a6 g4 g6 g6 b6 e6 b6 g7 g6 b7 g6 g6 b7 e4 e6 g6 e7
+c6 e5 a4 c6 e6 a4 g4 e4 e6 g6 a4 c4 e6 e6 g6 e6 a6 a4 e4 e4 e4 c4 a6 c4 e5 e4 g6 a6 a4 e6 e6 c5 d4 g4 b6 d6 d4 d6 g5 b5 b4 g6 b5 g6 g4 b6 d6 d6 b6 g6 b5 g5 d4 g4 g6 d4 g6 g6 b6 b6 g4 d6 d6 g6 c5 f4 c4 a6 c6 c6 a4 a5 e6 a4 c6 c6 c4 e5 f4 c4 f6 c6 c6 a4 c5 f6 a5 c4 f4 c4 a4 f4 c4 c5 f6 a5 g4 b6 b5 g4 b4 b4 g6 b4 b4 g6 g6 b4 e4 g4 b6 g6 b4 e4 g4 e6 g6 b5 b4 e5 g6 g5 b5 e4 e6 g6 e4 b6
+c6 e5 a4 c6 e6 a4 g4 e4 e6 g6 a4 c4 e6 e6 g6 e6 a6 a4 e4 e4 e4 c4 a6 c4 e5 e4 g6 a6 a4 e6 e6 c5 d4 g4 b6 d6 d4 d6 g5 b5 b4 g6 b5 g6 g4 b6 d6 d6 b6 g6 b5 g5 d4 g4 g6 d4 g6 g6 b6 b6 g4 d6 d6 g6 c5 f4 c4 a6 c6 c6 a4 a5 e6 a4 c6 c6 c4 e5 f4 c4 f6 c6 c6 a4 c5 f6 a5 c4 f4 c4 a4 f4 c4 c5 f6 a5 g4 b6 b5 g4 b4 b4 g6 b4 b4 g6 g6 b4 e4 g4 b6 g6 b4 e4 g4 e6 g6 b5 b4 e5 g6 g5 b5 e4 e6 g6 e4 b6
+		e5 e5 d5 c5 f5 g5 e5 e5
+		d5 c5 g4    a4    b4
+		a3 a3 g3 e3 f3 f3 e3 g3
+		a6 a6 b6 d7 c7 c7 b6 b6
+c6 a4 e6 c4 a6 c6 g6 e4 e6 e4 a4 e6 a6 e5 e6 e4 c6 e4 c4 e4 e6 c4 a6 e6 a6 a4 c6 a6 a6 a6 e4 a6 b6 g5 b4 b5 g4 b5 d4 g6 b4 b4 g6 g4 b5 b5 b6 d6 g6 b4 g4 d4 g6 d4 b5 b6 b6 g4 d4 b6 d4 d5 d6 b5 f6 f6 c5 a6 e6 c6 a4 c6 f5 c6 f6 f6 c6 c5 c6 f5 f5 e5 a4 c6 c5 a4 f6 c6 f4 e6 a6 a6 f6 e6 c4 e5 b6 g4 e4 b6 b6 b6 b5 b6 g6 e6 b6 e6 b5 g6 e4 b6 e6 b5 e4 b6 g6 b6 e5 e6 e6 e6 g6 e4 e6 e6 b4 b5
+c6 a4 e6 c4 a6 c6 g6 e4 e6 e4 a4 e6 a6 e5 e6 e4 c6 e4 c4 e4 e6 c4 a6 e6 a6 a4 c6 a6 a6 a6 e4 a6 b6 g5 b4 b5 g4 b5 d4 g6 b4 b4 g6 g4 b5 b5 b6 d6 g6 b4 g4 d4 g6 d4 b5 b6 b6 g4 d4 b6 d4 d5 d6 b5 f6 f6 c5 a6 e6 c6 a4 c6 f5 c6 f6 f6 c6 c5 c6 f5 f5 e5 a4 c6 c5 a4 f6 c6 f4 e6 a6 a6 f6 e6 c4 e5 b6 g4 e4 b6 b6 b6 b5 b6 g6 e6 b6 e6 b5 g6 e4 b6 e6 b5 e4 b6 g6 b6 e5 e6 e6 e6 g6 e4 e6 e6 b4 b5
+c5 a5 e5 a5 c5 e5 a5 c5 a5 g5 e5 g5 a5 c5 g5 c5 a5 c5 e5 a5 g5 e5 c5 e5 c5 a5 g5 a5 e5 a5 c5 a5 g5 c5 g5 a5 g5 c5 a5 c5 g5 c5 e5 c5 a5 g5 c5 e5 a5 e5 c5 g5 e5 a5 e5 c5 e5 a5 g5 c5 g5 a5 e5 g5 d5 b5 g5 b5 g5 b5 d5 g5 d5 b5 g5 d5 g5 d5 g5 b5 d5 b5 g5 b5 d5 g5 b5 g5 b5 d5 g5 d5 b5 d5 g5 d5 b5 d5 g5 d5 b5 d5 g5 d5 g5 b5 g5 b5 d5 b5 d5 b5 g5 d5 b5 d5 b5 d5 b5 g5 d5 b5 g5 b5 d5 g5 b5 d5 a5 f5 a5 f5 e5 a5 e5 c5 a5 f5 c5 a5 f5 a5 e5 c5 a5 c5 f5 a5 c5 f5 c5 a5 c5 e5 c5 a5 f5 e5 a5 c5 a5 f5 c5 f5 c5 f5 e5 a5 e5 a5 c5 a5 f5 c5 a5 f5 a5 f5 e5 a5 c5 f5 e5 a5 f5 c5 f5 c5 a5 c5 a5 f5 g5 e5 b5 g5 b5 g5 e5 g5 e5 b5 g5 b5 g5 e5 g5 e5 g5 b5 g5 b5 e5 g5 b5 e5 b5 e5 g5 b5 g5 e5 g5 b5 e5 g5 e5 b5 g5 e5 b5 e5 b5 g5 e5 b5 e5 b5 g5 b5 g5 e5 g5 b5 e5 b5 e5 b5 e5 g5 e5 g5 b5 g5 b5 g5
+c6 e6 g6 e6 a6 e6 c6 a6 c6 e6 g6 a6 g6 a6 e6 a6 e6 c6 e6 c6 e6 c6 a6 c6 a6 g6 a6 e6 g6 e6 a6 c6 e6 c6 g6 e6 c6 g6 c6 e6 a6 c6 e6 c6 e6 c6 e6 a6 e6 c6 e6 a6 c6 e6 c6 e6 c6 a6 e6 a6 e6 c6 e6 c6 d6 g6 b6 d6 g6 b6 g6 b6 g6 b6 d6 g6 b6 d6 g6 b6 g6 d6 g6 b6 d6 b6 g6 d6 b6 g6 b6 d6 b6 g6 d6 b6 g6 d6 b6 d6 b6 g6 d6 g6 d6 g6 d6 g6 b6 d6 b6 d6 g6 d6 g6 d6 b6 d6 b6 g6 b6 g6 d6 b6 d6 b6 d6 b6 a6 c6 a6 f6 c6 f6 a6 c6 a6 e6 f6 c6 e6 c6 a6 f6 e6 f6 e6 f6 a6 f6 a6 f6 a6 c6 a6 c6 f6 a6 c6 e6 f6 c6 e6 c6 f6 a6 f6 c6 e6 a6 c6 a6 f6 a6 c6 a6 c6 e6 a6 c6 f6 c6 e6 f6 c6 a6 c6 f6 a6 e6 f6 a6 e6 b6 e6 b6 g6 b6 e6 b6 e6 g6 b6 g6 e6 b6 g6 e6 b6 e6 b6 e6 g6 b6 g6 b6 e6 b6 e6 b6 e6 g6 e6 b6 g6 e6 b6 e6 g6 b6 g6 e6 b6 g6 b6 e6 g6 e6 b6 e6 g6 e6 g6 b6 e6 g6 b6 e6 g6 b6 g6 e6 g6 b6 e6 g6
+e7 c7 a7 c7 e7 a7 c7 a7 e7 g7 e7 g7 a7 g7 a7 e7 c7 a7 g7 e7 a7 c7 a7 e7 g7 c7 e7 g7 e7 a7 e7 a7 e7 c7 e7 a7 c7 e7 c7 g7 e7 c7 a7 g7 c7 e7 c7 a7 c7 g7 c7 e7 g7 c7 a7 c7 e7 g7 c7 e7 c7 e7 c7 g7 d7 g7 b7 g7 b7 d7 g7 d7 g7 b7 d7 b7 d7 g7 d7 g7 b7 g7 b7 d7 b7 g7 d7 g7 d7 b7 d7 g7 d7 g7 d7 b7 d7 g7 d7 b7 g7 d7 b7 g7 d7 b7 d7 g7 b7 d7 g7 d7 g7 b7 g7 d7 g7 b7 g7 b7 g7 d7 g7 d7 b7 d7 b7 g7 a7 c7 f7 c7 e7 c7 e7 f7 e7 c7 f7 a7 f7 c7 a7 c7 a7 c7 f7 c7 f7 a7 c7 a7 c7 a7 f7 c7 a7 c7 f7 c7 a7 c7 a7 c7 a7 f7 a7 f7 c7 a7 e7 a7 e7 a7 f7 c7 e7 c7 a7 f7 e7 a7 f7 c7 f7 a7 f7 e7 c7 a7 e7 f7 b7 g7 e7 g7 b7 e7 g7 b7 g7 b7 e7 b7 e7 g7 e7 g7 b7 g7 b7 e7 b7 e7 b7 e7 g7 e7 b7 g7 b7 e7 b7 e7 b7 g7 b7 g7 e7 b7 e7 b7 g7 e7 b7 e7 g7 b7 g7 e7 g7 e7 g7 b7 g7 e7 g7 e7 g7 e7 g7 b7 e7 g7 e7 b7
+
 	");
 
 	m.setCallbackNote({ arg note;
@@ -239,7 +251,7 @@ c5 g6 e6 c6 c4 c4 e6 e6 c6 c4 a4 e6 e6 a6 f6 e6 e4 c6 g6 e5 g6 c6 g6 e6 b5 d5 b6
 			[index,value].postln;
 			switch(index)
 			{ 0 } { o.set("main","reverb",value/100); }
-			{ o.set("loop"++index,"db",value.linlin(0,100,-64,0)); }
+			{ o.set("loop"++index,"db",value.linlin(0,100,-36,0)); }
 			{ };
 			// o.set("main","reverb",0.5);
 			// o.set("input","db",0.neg);

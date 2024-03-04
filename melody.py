@@ -3,17 +3,51 @@ import random
 # Notes in the musical scale to choose from, ensuring variety but musicality
 notes = ["a", "a", "b", "c", "c", "d", "e", "e", "e", "e", "e", "f", "g"]
 chords = [
-    ["a", "c", "e", "a", "c", "e", "g"],
-    ["f", "a", "c", "f", "a", "c", "f", "a", "c", "e"],
+    ["c", "e", "g"],
+    ["c", "e", "g"],
     ["c", "e", "g"],
     ["g", "b", "d"],
+    ["g", "b", "d"],
+    ["g", "b", "d"],
+    ["a", "c", "e"],
+    ["a", "c", "e"],
+    ["a", "c", "e"],
+    ["a", "c", "e"],
+    ["a", "c", "e"],
+    ["a", "c", "e"],
+    ["a", "c", "e"],
+    ["a", "c", "e"],
+    ["a", "c", "e"],
+    ["a", "c", "e"],
+    ["d", "f", "a"],
+    ["d", "f", "a"],
+    ["d", "f", "a"],
+    ["d", "f", "a"],
+    ["d", "f", "a"],
+    ["d", "f", "a"],
+    ["f", "a", "c"],
+    ["f", "a", "c"],
+    ["f", "a", "c"],
+    ["f", "a", "c"],
+    ["f", "a", "c"],
+    ["f", "a", "c"],
 ]
-octaves = ["4", "5", "6", "6", "6"]
+octaves = ["7", "8", "8", "8", "8", "8", "6"]
 
 # Generating new melody
+# Generating new melody
 new_melody = []
+last_note = 0
+last_octave = 0
 for chord in chords:
-    for i in range(4 * 2):
-        new_melody.append(random.choice(chord) + random.choice(octaves))
+    for i in range(6):
+        octave = random.choice(octaves)
+
+        random_note = random.choice(chord) + octave
+        while random_note == last_note:
+            random_note = random.choice(chord) + octave
+
+        last_note = random_note
+        new_melody.append(random_note)
 
 print(" ".join(new_melody))
