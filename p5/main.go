@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os/exec"
 	"strings"
 	"sync"
 	"time"
@@ -21,6 +22,11 @@ func main() {
 
 	supercollider = osc.NewClient("127.0.0.1", 57120)
 
+	go func() {
+		time.Sleep(2 * time.Second)
+		// open browser
+		exec.Command("open", "http://localhost:8098").Start()
+	}()
 	go func() {
 		addr := "127.0.0.1:8123"
 		d := osc.NewStandardDispatcher()

@@ -184,19 +184,22 @@ Ouroboros2 {
 
 		// main output
 		SynthDef("main",{
-			arg busIn, busLive, busOut, busCount, db=0, reverb=0;
+			arg busIn, busLive, busNoVerb, busOut, busCount, db=0, reverb=0, dbNoVerb=0;
 			var snd;
+			var sndNoVerb;
 			var count;
 			count = Clip.kr(In.kr(busCount,1)/5,1,30);
 			snd = In.ar(busIn,2);
+			sndNoVerb = In.ar(busNoVerb, 2) * Lag.kr(dbNoVerb.dbamp);
 
 			snd = (snd/count) + In.ar(busLive,2);
 
 			snd = snd * EnvGen.ar(Env.adsr(10,1,1,1));
 
-			snd = RHPF.ar(snd,60,0.606);
+			snd = RHPF.ar(snd,65.41,0.101);
 
 			snd = AnalogTape.ar(snd,0.9,0.9,0.7,2);
+			sndNoVerb = AnalogTape.ar(sndNoVerb,0.9,0.9,0.7,1);
 
 			snd = SelectX.ar(Lag.kr(reverb,5),[snd,
 				Fverb.ar(snd[0],snd[1],200,
@@ -205,15 +208,22 @@ Ouroboros2 {
 				)
 			]);
 
+			snd = Compander.ar(snd, sndNoVerb, 0.1, 1.0, 0.1, 0.01, 0.1);
+			snd = snd + sndNoVerb;
+
 			snd = Limiter.ar(snd)*0.75;
 			Out.ar(busOut,snd * Lag.kr(db,30).dbamp);
 		}).send(server);
 
 		SynthDef("input",{
-			arg busOut,busRecord,lpf=135, db=3.neg;
+			arg busOut,busRecord,busNoVerb, lpf=135, db=3.neg;
 			var snd, incomingFreq, hasFreq, freq;
+			var sndR;
 
-			snd = SoundIn.ar([0,1]);
+			snd = SoundIn.ar([1]);
+			snd = Pan2.ar(snd);
+			sndR = SoundIn.ar([0]);
+			sndR = Pan2.ar(sndR);
 			snd = snd + In.ar(busRecord,2);
 			// temp
 			// snd = Pan2.ar(Mix.new(snd));
@@ -228,7 +238,7 @@ Ouroboros2 {
 			lpf = Clip.kr(lpf,20,135);
 
 			snd = RLPF.ar(snd,lpf.midicps,0.707);
-
+			Out.ar(busNoVerb, sndR);
 			Out.ar(busRecord,snd);
 			Out.ar(busOut,snd * db.dbamp);
 		}).send(server);
@@ -342,6 +352,7 @@ Ouroboros2 {
 		buses.put("record",Bus.audio(server,2));
 		buses.put("metronome",Bus.control(server,1));
 		buses.put("main",Bus.audio(server,2));
+		buses.put("noverb",Bus.audio(server,2));
 		buses.put("count",Bus.control(server,1));
 
 		Routine {
@@ -353,6 +364,7 @@ Ouroboros2 {
 				busOut: 0,
 				busIn: buses.at("main"),
 				busLive: buses.at("input"),
+				busNoVerb: buses.at("noverb"),
 			]));
 			NodeWatcher.register(syns.at("main"));
 			server.sync;
@@ -360,6 +372,7 @@ Ouroboros2 {
 				busOut: buses.at("input"),
 				busRecord: buses.at("record"),
 				busCount: buses.at("count"),
+				busNoVerb: buses.at("noverb"),
 			]));
 			NodeWatcher.register(syns.at("input"));
 
