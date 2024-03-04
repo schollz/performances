@@ -51,6 +51,20 @@ func main() {
 			}
 			mutex.Unlock()
 		})
+		d.AddMsgHandler("/note", func(msg *osc.Message) {
+			mutex.Lock()
+			for c := range connections {
+				err := c.WriteJSON(struct {
+					Note int32 `json:"n"`
+				}{
+					msg.Arguments[0].(int32),
+				})
+				if err != nil {
+					log.Error(err)
+				}
+			}
+			mutex.Unlock()
+		})
 
 		server := &osc.Server{
 			Addr:       addr,

@@ -29,6 +29,8 @@
                 const db = data.db;
                 windata[loopid + 1] = [x, y, db]; // Update windata
                 // console.log(data.loop, data.x, data.y);
+            } else if (data.n != undefined) {
+                addFadingCircle(data.n);
             }
         };
         const socketOpenListener = (e) => {
@@ -91,11 +93,37 @@
             sliders[0].slider.value(30);
             sliders[1].slider.value(50);
 
+            // setInterval(addFadingCircle, 1000);
             frameRate(30);
         }
 
         function invertColor(hex) {
             return (Number(`0x1${hex}`) ^ 0xFFFFFF).toString(16).substr(1).toUpperCase()
+        }
+
+        // Define an array to hold the fading circles
+        let fadingCircles = [];
+
+        // Function to add a new fading circle
+        function addFadingCircle(val) {
+            // Add a new circle with random position, initial opacity, and size
+            let finalsize = random(60, 120);
+            let x = map(val, 24, 112, 0, width);
+            let y = random(0, height);
+            x = constrain(x, finalsize, width - finalsize);
+            y = constrain(y, finalsize, height - finalsize);
+            fadingCircles.push({
+                val: val,
+                x: x,
+                y: y,
+                inc: 1, // Random speed between 0.01 and 0.05
+                dec: 1,
+                opacity: 15, // Start fully opaque
+                size: 0, // Random size between 10 and 100
+                increasing: true,
+                finalsize: finalsize, // Random size between 10 and 100
+            });
+
         }
 
         function draw() {
@@ -182,6 +210,45 @@
                 endShape(CLOSE);
             }
 
+            // Draw all the fading circles
+            for (let i = fadingCircles.length - 1; i >= 0; i--) {
+                let circle = fadingCircles[i];
+                fill('#' + colors[circle.val % colors.length] + circle.opacity); // Use RGBA for opacity
+                // fill(255, 255, 255, circle.opacity); // Use RGBA for opacity
+                noStroke();
+
+                // Update the size of the circle
+                if (circle.size <= circle.finalsize && circle.increasing) {
+                    circle.size += circle.inc; // Grow the circle until it reaches its max size
+                    if (circle.opacity < 80) {
+                        circle.opacity += circle.inc;
+                    }
+                } else {
+                    circle.increasing = false;
+                    circle.opacity -= circle.dec;
+                    circle.size -= circle.dec; // Once at max size, start shrinking
+                }
+
+                // Ensure the circle size does not become negative
+                circle.size = max(circle.size, 0);
+
+                // Draw the noisy circle
+                beginShape();
+                for (let angle = 0; angle < TWO_PI; angle += 0.1) {
+                    let offset = map(noise(cos(angle) * 0.5 + 1, sin(angle) * 0.5 + 1, circle.x, circle.y), 0, 1, -20, 20);
+                    let noisyRadius = offset + circle.size + noise(frameCount / 30 * 0.01, circle.x, circle.y) * 1;
+                    let x = circle.x + cos(angle) * noisyRadius;
+                    let y = circle.y + sin(angle) * noisyRadius;
+                    vertex(x, y);
+                }
+                endShape(CLOSE);
+
+                // Remove the circle from the array if it is completely faded and shrunk
+                if ((circle.size <= 5 || circle.opacity <= 10) && !circle.increasing) {
+                    fadingCircles.splice(i, 1);
+                }
+            }
+
 
             blendMode(BLEND);
             // no fill
@@ -229,6 +296,7 @@
                 }
                 endShape(CLOSE);
             }
+
 
         }
 

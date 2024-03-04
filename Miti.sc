@@ -105,6 +105,7 @@ Miti {
 				if (callbackNote.notNil,{
 					if (l[index].notNil,{
 						callbackNote.(l[index]);
+						NetAddr.new("127.0.0.1",8123).sendMsg("/note",l[index]);
 					});
 				});
 				index = index + 1;
