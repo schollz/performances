@@ -53,50 +53,6 @@ s.waitForBoot({
 		// ~crowSet.(2,data);
 	});
 
-	/*
-	// final
-	m=Miti.new(Server.default,bpm,"
-a2 f2 c2 g2
-a3 a3 c4 b4
-c4 c4 g4 g4
-e5 f5 e5 d5
-e6 e6 g6 b6
-c7 c7 c7 d7
-e7 d7 e7 b6
-c6 c6 a5 a5 c6 c6 f6 f6 e6 e6 e6 e6 g6 g6 b6 b6
-c6 c6 a5 a5 c6 c6 f6 f6 e6 e6 e6 e6 g6 g6 b6 b6
-c7 c7 c7 d7
-c6 c6 a5 a5 c6 c6 f6 f6 e6 e6 e6 e6 g6 g6 b6 b6
-c6 e6 a5 b5 c6 a6 a6 f6 e6 g6 c6 g6 g5 b5 d5 b5
-e6
-a6 e4 a4 a5 c4 c5 e6 g6 c6 c6 a4 c6 f4 c6 a5 c6 c6 c6 g6 g6 c6 c6 g6 g5 b5 g6 d4 d5 d4 g6 b6 d6
-a6 e4 a4 a5 c4 c5 e6 g6 c6 c6 a4 c6 f4 c6 a5 c6 c6 c6 g6 g6 c6 c6 g6 g5 b5 g6 d4 d5 d4 g6 b6 d6
-e4 a6 a6 c6 c6 a6 c6 a5 f5 c5 f6 c6 e6 f6 a4 c6 g5 c4 c4 e6 c4 g5 g6 c5 g6 g6 g6 g6 b4 b4 g4 b5
-e4 a6 a6 c6 c6 a6 c6 a5 f5 c5 f6 c6 e6 f6 a4 c6 g5 c4 c4 e6 c4 g5 g6 c5 g6 g6 g6 g6 b4 b4 g4 b5
-c5 e6 c5 g5 c6 a6 a4 a6 a5 a6 f6 a4 e5 f6 a6 c6 e6 c4 g6 e4 c6 c6 g6 c6 g5 d5 d6 b5 d5 d4 b6 d6
-c5 g6 e6 c6 c4 c4 e6 e6 c6 c4 a4 e6 e6 a6 f6 e6 e4 c6 g6 e5 g6 c6 g6 e6 b5 d5 b6 g6 g6 d6 b6 b6
-a4 c6 g4 a6 g6 a6 e5 g6 e4 a6 a6 e6 e6 e6 a5 c5 f6 f4 f6 a4 f5 f5 f6 c6 a4 a5 a6 f6 f5 c6 c6 c6 g4 c5 e6 c6 g6 g6 g5 e6 c6 g6 e6 g6 c5 g6 c5 g5 g6 b6 b6 g6 g6 g4 d6 b4 d6 g6 d6 g5 g6 b4 d5 g6
-a4 c6 g4 a6 g6 a6 e5 g6 e4 a6 a6 e6 e6 e6 a5 c5 f6 f4 f6 a4 f5 f5 f6 c6 a4 a5 a6 f6 f5 c6 c6 c6 g4 c5 e6 c6 g6 g6 g5 e6 c6 g6 e6 g6 c5 g6 c5 g5 g6 b6 b6 g6 g6 g4 d6 b4 d6 g6 d6 g5 g6 b4 d5 g6
-c5 a6 a4 a6 e6 c5 a6 a6 a5 e6 a6 e5 c6 e6 c6 c5 a5 a6 c4 g6 a5 a5 c4 e6 e5 e4 c5 a6 g6 a5 a6 c5 f6 a6 a6 e4 f6 c6 c4 f6 f6 e5 e4 f5 a6 a6 a4 f6 c5 c6 c6 c6 f4 c5 f6 a6 a6 c6 f4 f4 a6 f4 a5 c4
-c6 c6 g4 g5 c6 c6 c6 c5 e6 c6 c6 g5 g4 e6 g6 g6 g6 c6 g6 c6 g6 c6 e5 g6 e4 g5 g5 e6 g4 c6 e6 g4 d6 g6 g4 b4 g4 d6 b6 g6 d6 b4 g4 b6 d6 g5 g6 d6 d6 d6 b6 d4 b5 g4 b6 d5 g6 b6 d5 d5 d5 g6 d4 g6
-e4 a6 a6 c6 c6 a6 c6 a5 f5 c5 f6 c6 e6 f6 a4 c6 g5 c4 c4 e6 c4 g5 g6 c5 g6 g6 g6 g6 b4 b4 g4 b5
-c5 g6 e6 c6 c4 c4 e6 e6 c6 c4 a4 e6 e6 a6 f6 e6 e4 c6 g6 e5 g6 c6 g6 e6 b5 d5 b6 g6 g6 d6 b6 b6
-"); */
-
-	/*	m=Miti.new(Server.default,bpm,"
-	d5  a5  a5  e5  g#5 f#5 f#5 f#6 c#6 f#6 f#6 g#6 a6  d7
-	a3  f#3 f#3 f#3 c#3 a3  a3  d3  f#3 c#3 c#3 c#3 f#3 f#3
-	f#6 c#7 c#7 a6  e6  d6  d6  a6  a6  a5  a5  e6  d6  a5
-	a4  a4  a4  e4  g#4 a5  a5  d5  f#5 d5  c#5 c#5 f#5 f#5
-	d7  f#7 f#7 a7  e7  d7  d7  d7  f#7 c#7 f#7 e7  d7  a7
-	a7  a7  a7  e7  g#7 f#7 f#7 a7  a7  a7  a7  e7  a7  d7
-	");*/
-	/*	m=Miti.new(Server.default,bpm,"
-	d5 e5  a4 a4  f4 f4  c5 c5
-	b4 c5  d4 d4  a5 a5  e5 e5
-	g6 a6  f6 f6  c6 c6  g5 g5
-	");*/
-
 	// melody.py
 	m=Miti.new(Server.default,bpm,"
 c6 e6 c6 g6 c6 e6 g6 e6 g6 c6 e6 c6 g6 c6 g6 c6 e6 g6 d6 b6 g6 b6 d6 b6 g6 b6 d6 g6 b6 d6 b6 g6 b6 g6 d6 g6 c6 a6 e6 a6 e6 a6 c6 a6 c6 e6 c6 a6 e6 c6 a6 c6 a6 e6 c6 a6 c6 a6 c6 e6 c6 e6 c6 a6 e6 a6 e6 c6 a6 e6 a6 e6 c6 e6 a6 e6 a6 e6 c6 e6 c6 e6 c6 a6 e6 a6 c6 a6 e6 a6 e6 c6 a6 c6 a6 e6 d6 a6 f6 a6 f6 d6 f6 a6 d6 f6 d6 f6 d6 a6 d6 a6 d6 f6 d6 a6 d6 f6 d6 a6 d6 f6 a6 d6 f6 d6 f6 d6 a6 f6 d6 a6 f6 a6 c6 f6 c6 f6 c6 a6 f6 a6 c6 f6 c6 f6 c6 a6 c6 a6 f6 c6 f6 a6 c6 f6 c6 a6 f6 c6 a6 c6 a6 c6 a6 c6 a6 f6
@@ -123,15 +79,11 @@ c7 e7 c7 e7 c7 e7 g7 c7 e7 c6 e6 g6 e7 g7 e7 g7 c7 g7 b7 d7 b7 g7 d6 g7 d6 b7 d7
 c7 e7 c7 e7 c7 e7 g7 c7 e7 c6 e6 g6 e7 g7 e7 g7 c7 g7 b7 d7 b7 g7 d6 g7 d6 b7 d7 g7 d7 b7 g7 d7 b6 g7 b7 g7 c7 a6 c7 a7 e7 e6 a7 c7 a7 c7 a7 e7 a7 e6 e7 a7 e7 c7 a7 e7 c7 e7 e6 a7 e7 a7 e7 c6 a7 c7 a7 c7 e7 c7 e6 e7 c7 e7 c7 e7 a7 e7 a7 e6 c7 a7 c7 a7 c7 a7 e7 a7 e7 a7 e7 a7 e7 a7 c7 e6 d7 a7 d7 a7 f7 d7 f7 d7 a6 f7 d7 f6 d7 a7 f7 d7 a7 f7 a7 f7 a7 f7 d7 a7 d7 f7 a6 d7 a7 f7 a7 d7 f6 f7 a6 f7 c7 a7 f7 c7 f7 c7 a7 f7 a7 f7 a6 f7 c6 f7 c7 a7 c7 a7 c7 a6 f7 a7 f7 a7 c7 f7 c6 a6 f7 a7 c7 c6 a6 f7 c7 a7
 ");
 
-	/*	// melody2.py
-	m=Miti.new(Server.default,bpm,"
-	b6 b6 b6 e5 e5 e5 e5 e5 c6 c6 c6 c6 b5 b5 b5 b5 e5 e5 e5 e5 e5 e5 e5 e5 c5 c5 c5 c5 d5 d5 d5 d5
-	e5 e5 e5 a6 a6 a6 a6 a6 a6 a6 a6 a6 d6 d6 d6 d6 g6 g6 g6 g6 g6 g6 g6 g6 a6 a6 a6 a6 b6 b6 b6 b6
-	d7 d7 d7 c7 c7 c7 c7 c7 f7 f7 f7 f7 g7 g7 g7 g7 c7 c7 c7 c7 c7 c7 c7 c7 e6 e6 e6 e6 g6 g6 g6 g6
-	e3 e3 e3 a3 a3 a3 a3 a3 f3 f3 f3 f3 g3 g3 g3 g3 c3 c3 c3 c3 e3 e3 e3 e3 a3 a3 a3 a3 g3 g3 g3 g3
-	");*/
 
-
+	p.putAll("output[3].action='pulse();'\n");
+	m.setCallbackClock({ arg clockIndex;
+		p.putAll("output[3]();\n");
+	});
 	m.setCallbackNote({ arg note;
 		["note",note].postln;
 		if (noteLast!=note,{
@@ -208,17 +160,8 @@ c7 e7 c7 e7 c7 e7 g7 c7 e7 c6 e6 g6 e7 g7 e7 g7 c7 g7 b7 d7 b7 g7 d6 g7 d6 b7 d7
 
 	//ServerMeter.new(s,2, 2);
 
-	p.putAll("output[2].slew=0.1;\n");
-	p.putAll("output[3].slew=0.1;\n");
 	p.putAll("output[4].slew=0.1;\n");
 	m.start();
-
-	// Buffer.read(s,"/home/zns/Music/spliceloop2/drums-ambient/70/dt_70_drum_loop_tromb_kick_key_bpm70_beats8_.flac",action:{
-	// Buffer.read(s,"/home/zns/Music/spliceloop2/drums-ambient/90/AG_90_drum_loop_stood_kick_key_bpm90_beats16_.flac",action:{
-	// 	arg buf;
-	// 	o.playAudio("drums",buf);
-	// 	// Synth.head(o.buses("main")
-	// });
 
 	Routine {
 		if (u.notNil,{
@@ -230,14 +173,22 @@ c7 e7 c7 e7 c7 e7 g7 c7 e7 c6 e6 g6 e7 g7 e7 g7 c7 g7 b7 d7 b7 g7 d6 g7 d6 b7 d7
 			[index,value].postln;
 			switch(index)
 			{ 0 } { o.set("main","reverb",value/100); }
-			{ o.set("loop"++index,"db",value.linlin(0,100,-36,0)); }
+			{ 1 } {
+				if (value<10,{
+					o.set("main","dbNoVerb",-96);
+				},{
+					o.set("main","dbNoVerb",value.linlin(10,100,0,24));
+				});
+			}
+			{ o.set("loop"++(index-1),"db",value.linlin(0,100,-36,0)); }
 			{ };
 			// o.set("main","reverb",0.5);
 			// o.set("input","db",0.neg);
 
 		}, '/slider',);
 		0.1.wait;
-		o.set("main","reverb",0.3);
+		o.set("main","reverb",0.2);
+		o.set("main","dbNoVerb",-96);
 	}.play;
 });
 )

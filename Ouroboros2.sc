@@ -208,7 +208,7 @@ Ouroboros2 {
 				)
 			]);
 
-			snd = Compander.ar(snd, sndNoVerb, 0.1, 1.0, 0.1, 0.01, 0.1);
+			snd = Compander.ar(snd, sndNoVerb, 0.1, 1.0, 0.1, 0.05, 0.3);
 			snd = snd + sndNoVerb;
 
 			snd = Limiter.ar(snd)*0.75;

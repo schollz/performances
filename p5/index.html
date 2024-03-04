@@ -65,7 +65,7 @@
         createCanvas(width, height);
         strokeWeight(4);
 
-        numberSliders = 8;
+        numberSliders = 9;
         sliders = Array.from({ length: numberSliders }, (_, i) => {
             return {
                 x: 25,
@@ -89,6 +89,7 @@
             sliders[i].slider.value(100);
         });
         sliders[0].slider.value(30);
+        sliders[1].slider.value(50);
 
         frameRate(30);
     }
@@ -103,6 +104,7 @@
 
         const colors = [
             invertColor("ffcfd2"),
+            invertColor("ffcfd2"),
             invertColor("f1c0e8"),
             invertColor("cfbaf0"),
             invertColor("a3c4f3"),
@@ -113,7 +115,7 @@
 
         // draw all the sliders
         sliders.forEach((slider, i) => {
-            if (i > 0 && windata[i - 1][0] == 0 && windata[i - 1][1] == 0) {
+            if (i > 1 && windata[i - 1][0] == 0 && windata[i - 1][1] == 0) {
                 sliders[i].slider.style('opacity', '0.0');
                 return;
             }
@@ -121,7 +123,7 @@
             let x1 = slider.x;
             let x2 = slider.x + slider.width;
             let y = slider.y;
-            if (i > 0) {
+            if (i > 1) {
                 stroke('#' + colors[(i - 1) % colors.length]);
             }
             beginShape();

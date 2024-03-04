@@ -22,7 +22,7 @@ s.waitForBoot({
 	});
 
 	p = SerialPort.new(
-		"/dev/ttyACM1",
+		"/dev/ttyACM0",
 		baudrate: 115200
 	);
 	~crowSet = {
@@ -84,6 +84,11 @@ e7 c7 a7 c7 e7 a7 c7 a7 e7 g7 e7 g7 a7 g7 a7 e7 c7 a7 g7 e7 a7 c7 a7 e7 g7 c7 e7
 
 ");
 
+
+	p.putAll("output[3].action='pulse();'\n");
+	m.setCallbackClock({ arg clockIndex;
+		p.putAll("output[3]();\n");
+	});
 	m.setCallbackNote({ arg note;
 		["note",note].postln;
 		if (noteLast!=note,{
@@ -112,8 +117,6 @@ e7 c7 a7 c7 e7 a7 c7 a7 e7 g7 e7 g7 a7 g7 a7 e7 c7 a7 g7 e7 a7 c7 a7 e7 g7 c7 e7
 		// doRecord = false;
 
 	});
-
-
 
 	~scale=scale;
 	OSCFunc({ arg msg, time, addr, recvPort;
@@ -160,9 +163,6 @@ e7 c7 a7 c7 e7 a7 c7 a7 e7 g7 e7 g7 a7 g7 a7 e7 c7 a7 g7 e7 a7 c7 a7 e7 g7 c7 e7
 
 
 	//ServerMeter.new(s,2, 2);
-
-	p.putAll("output[2].slew=0.1;\n");
-	p.putAll("output[3].slew=0.1;\n");
 	p.putAll("output[4].slew=0.1;\n");
 	m.start();
 
@@ -174,7 +174,6 @@ e7 c7 a7 c7 e7 a7 c7 a7 e7 g7 e7 g7 a7 g7 a7 e7 c7 a7 g7 e7 a7 c7 a7 e7 g7 c7 e7
 	// });
 
 	Routine {
-		s.record;
 		if (u.notNil,{
 			u.free;
 		});
@@ -184,7 +183,14 @@ e7 c7 a7 c7 e7 a7 c7 a7 e7 g7 e7 g7 a7 g7 a7 e7 c7 a7 g7 e7 a7 c7 a7 e7 g7 c7 e7
 			[index,value].postln;
 			switch(index)
 			{ 0 } { o.set("main","reverb",value/100); }
-			{ o.set("loop"++index,"db",value.linlin(0,100,-36,0)); }
+			{ 1 } {
+				if (value<10,{
+					o.set("main","dbNoVerb",-96);
+				},{
+					o.set("main","dbNoVerb",value.linlin(10,100,0,24));
+				});
+			}
+			{ o.set("loop"++(index-1),"db",value.linlin(0,100,-36,0)); }
 			{ };
 			// o.set("main","reverb",0.5);
 			// o.set("input","db",0.neg);
@@ -192,10 +198,10 @@ e7 c7 a7 c7 e7 a7 c7 a7 e7 g7 e7 g7 a7 g7 a7 e7 c7 a7 g7 e7 a7 c7 a7 e7 g7 c7 e7
 		}, '/slider',);
 		0.1.wait;
 		o.set("main","reverb",0.2);
-		o.set("main","dbNoVerb",8);
+		o.set("main","dbNoVerb",-96);
 	}.play;
 });
 )
 
 
-o.set("main","dbNoVerb",4);
+

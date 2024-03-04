@@ -3,7 +3,7 @@
 t = Server.default.options;
 t.numInputBusChannels = 2;
 s.waitForBoot({
-	var bpm = 90;
+	var bpm = 95;
 	var recCount = 0;
 	var doRecord = true;
 	var loopNum = 0;
@@ -68,7 +68,7 @@ c6 c6 a5 a5 c6 c6 f6 f6 e6 e6 e6 e6 g6 g6 b6 b6
 c7 c7 c7 d7
 e7 e7 e7 e7 d7 d7 e7 e7 f7 f7
 g7 g7 g7 g7 g7 g7 a7 b7
-c8 c8 a7 a7 c8 c8 f8 f8 e8 e8 e8 e8 g8 g8 b7 b7
+c7 c7 a6 a6 c7 c7 f7 f7 e7 e7 e7 e7 g7 g7 b7 b7
 c6 c6 a5 a5 c6 c6 f6 f6 e6 e6 e6 e6 g6 g6 b6 b6
 c6 e6 a5 b5 c6 a6 a6 f6 e6 g6 c6 g6 g5 b5 d5 b5
 a6 e4 a4 a5 c4 c5 e6 g6 c6 c6 a4 c6 f4 c6 a5 c6 c6 c6 g6 g6 c6 c6 g6 g5 b5 g6 d4 d5 d4 g6 b6 d6
@@ -87,6 +87,11 @@ c4 c4 a3 a3 c4 c4 f4 f4 e4 e4 e4 e4 g3 g3 b3 b3
 ");
 
 
+	p.putAll("output[3].action='pulse();'\n");
+	m.setCallbackClock({ arg clockIndex;
+		clockIndex.postln;
+		p.putAll("output[3]();\n");
+	});
 	m.setCallbackNote({ arg note;
 		["note",note].postln;
 		if (noteLast!=note,{
@@ -119,61 +124,9 @@ c4 c4 a3 a3 c4 c4 f4 f4 e4 e4 e4 e4 g3 g3 b3 b3
 
 
 	~scale=scale;
-	OSCFunc({ arg msg, time, addr, recvPort;
-		// [msg, time, addr, recvPort].postln;
-		var hand=msg[1].asString;
-		var gesture=msg[2].asString;
-		var x=msg[3].asFloat;
-		var y=msg[4].asFloat;
-		var data=x.linlin(0.54,1,0,10);
-		var note;
-		if (hand.asString=="right",{
-			// right hand controls pitches
-			// left hand steps in triads
-			handNote = y.linlin(0.0,1,-7,7).round;
-			note = scale[handNote+(handOctave*3)];
-			if (x>0.9,{
-				note = note + 12;
-			});
-			if (x<0.7,{
-				note = note - 12;
-			});
-			if (note.notNil,{
-				if (gesture.asString=="closed",{
-				},{
-					note.postln;
-					~crowSet.(1,(note-36)/12);
-				});
-			});
-		});
-		if (hand.asString=="left",{
-			handOctave = y.linlin(0.0,1,0,12).round;
-			// if (loopNum>loopNumMax,{
-			// 	~crowSet.(1,(handNote-48+(handOctave*5))/12);
-			// });
 
-			// crow 2 ->  FM 1. FM1 knob fully CW
-			~crowSet.(2,x.linlin(0,0.5,0,10));
-			// crow 3 -> GAIN. GAIN knob at 8pm
-			~crowSet.(3,x.linlin(0,1,0,4));
-		});
-	}, '/conductor');
-
-
-
-	//ServerMeter.new(s,2, 2);
-
-	p.putAll("output[2].slew=0.1;\n");
-	p.putAll("output[3].slew=0.1;\n");
 	p.putAll("output[4].slew=0.1;\n");
 	m.start();
-
-	// Buffer.read(s,"/home/zns/Music/spliceloop2/drums-ambient/70/dt_70_drum_loop_tromb_kick_key_bpm70_beats8_.flac",action:{
-	// Buffer.read(s,"/home/zns/Music/spliceloop2/drums-ambient/90/AG_90_drum_loop_stood_kick_key_bpm90_beats16_.flac",action:{
-	// 	arg buf;
-	// 	o.playAudio("drums",buf);
-	// 	// Synth.head(o.buses("main")
-	// });
 
 	Routine {
 		if (u.notNil,{
@@ -185,14 +138,22 @@ c4 c4 a3 a3 c4 c4 f4 f4 e4 e4 e4 e4 g3 g3 b3 b3
 			[index,value].postln;
 			switch(index)
 			{ 0 } { o.set("main","reverb",value/100); }
-			{ o.set("loop"++index,"db",value.linlin(0,100,-36,0)); }
+			{ 1 } {
+				if (value<10,{
+					o.set("main","dbNoVerb",-96);
+				},{
+					o.set("main","dbNoVerb",value.linlin(10,100,0,24));
+				});
+			}
+			{ o.set("loop"++(index-1),"db",value.linlin(0,100,-36,0)); }
 			{ };
 			// o.set("main","reverb",0.5);
 			// o.set("input","db",0.neg);
 
 		}, '/slider',);
 		0.1.wait;
-		o.set("main","reverb",0.3);
+		o.set("main","reverb",0.2);
+		o.set("main","dbNoVerb",-96);
 	}.play;
 });
 )

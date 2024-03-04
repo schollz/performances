@@ -5,6 +5,7 @@ Miti {
 	var callbackNote;
 	var callbackMeasure;
 	var callbackScore;
+	var callbackClock;
 	var phrase;
 	var phraseNew;
 	var line;
@@ -131,6 +132,16 @@ Miti {
 				});
 			});
 		}.play;
+		Routine {
+			var clockIndex = 0;
+			while({ dostop.not },{
+				if (callbackClock.notNil,{
+					callbackClock.(clockIndex);
+				});
+				(60/tempo/2).wait;
+				clockIndex = clockIndex + 1;
+			});
+		}.play;
 
 	}
 	setTempo { arg argTempo;
@@ -139,6 +150,10 @@ Miti {
 
 	setPhrase { arg argPhrase;
 		phraseNew = argPhrase.mod(phrasesMidi.size);
+	}
+
+	setCallbackClock { arg callback;
+		callbackClock = callback;
 	}
 
 	setCallbackNote { arg callback;
