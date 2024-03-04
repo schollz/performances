@@ -126,7 +126,6 @@ c4 c4 a3 a3 c4 c4 f4 f4 e4 e4 e4 e4 g3 g3 b3 b3
 	~scale=scale;
 
 	p.putAll("output[4].slew=0.1;\n");
-	m.start();
 
 	Routine {
 		if (u.notNil,{
@@ -150,10 +149,12 @@ c4 c4 a3 a3 c4 c4 f4 f4 e4 e4 e4 e4 g3 g3 b3 b3
 			// o.set("main","reverb",0.5);
 			// o.set("input","db",0.neg);
 
-		}, '/slider',);
+		}, '/slider',recvPort:7771);
 		0.1.wait;
-		o.set("main","reverb",0.2);
+		o.set("main","reverb",0.45);
 		o.set("main","dbNoVerb",-96);
+		1.wait;
+			m.start();
 	}.play;
 });
 )

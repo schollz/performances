@@ -164,14 +164,7 @@ e7 c7 a7 c7 e7 a7 c7 a7 e7 g7 e7 g7 a7 g7 a7 e7 c7 a7 g7 e7 a7 c7 a7 e7 g7 c7 e7
 
 	//ServerMeter.new(s,2, 2);
 	p.putAll("output[4].slew=0.1;\n");
-	m.start();
 
-	// Buffer.read(s,"/home/zns/Music/spliceloop2/drums-ambient/70/dt_70_drum_loop_tromb_kick_key_bpm70_beats8_.flac",action:{
-	// Buffer.read(s,"/home/zns/Music/spliceloop2/drums-ambient/90/AG_90_drum_loop_stood_kick_key_bpm90_beats16_.flac",action:{
-	// 	arg buf;
-	// 	o.playAudio("drums",buf);
-	// 	// Synth.head(o.buses("main")
-	// });
 
 	Routine {
 		if (u.notNil,{
@@ -195,10 +188,12 @@ e7 c7 a7 c7 e7 a7 c7 a7 e7 g7 e7 g7 a7 g7 a7 e7 c7 a7 g7 e7 a7 c7 a7 e7 g7 c7 e7
 			// o.set("main","reverb",0.5);
 			// o.set("input","db",0.neg);
 
-		}, '/slider',);
+		}, '/slider',recvPort:7771);
 		0.1.wait;
 		o.set("main","reverb",0.2);
 		o.set("main","dbNoVerb",-96);
+		1.wait;
+		m.start();
 	}.play;
 });
 )

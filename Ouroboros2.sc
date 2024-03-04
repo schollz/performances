@@ -214,6 +214,7 @@ Ouroboros2 {
 			snd = Limiter.ar(snd)*0.75;
 			Out.ar(busOut,snd * Lag.kr(db,30).dbamp);
 		}).send(server);
+		server.sync;
 
 		SynthDef("input",{
 			arg busOut,busRecord,busNoVerb, lpf=135, db=3.neg;
@@ -242,6 +243,7 @@ Ouroboros2 {
 			Out.ar(busRecord,snd);
 			Out.ar(busOut,snd * db.dbamp);
 		}).send(server);
+		server.sync;
 
 		// metronome pulses at the beginning of each phrase
 		SynthDef("metronome",{
@@ -253,6 +255,7 @@ Ouroboros2 {
 
 			Out.kr(busOut,trig);
 		}).send(server);
+		server.sync;
 
 		SynthDef("metronomeManual",{
 			arg busOut, t_trig=0;
@@ -261,6 +264,7 @@ Ouroboros2 {
 			SendReply.kr(t_trig,"/metronome",1);
 			Out.kr(busOut,t_trig);
 		}).send(server);
+		server.sync;
 
 		SynthDef("recorderAudio",{
 			arg busIn, buf, db=0;
@@ -270,6 +274,7 @@ Ouroboros2 {
 			RecordBuf.ar(snd, buf, loop: 0, doneAction: 2);
 			Out.ar(0,Silent.ar(2));
 		}).send(server);
+		server.sync;
 
 		SynthDef("recorderCV",{
 			arg id=0, busMetronome, buf, data=0, gate=1;
@@ -282,6 +287,7 @@ Ouroboros2 {
 			snd = snd * EnvGen.ar(Env.adsr(1,1,1,1),gate);
 			SendReply.kr(Impulse.kr(10),"/cv",[id,snd]);
 		}).send(server);
+		server.sync;
 
 		SynthDef("looperAudio",{
 			arg busMetronome, busOut, busCount, buf, db=0, pan=0, gate=1, bufDisk, id;
@@ -312,6 +318,7 @@ Ouroboros2 {
 			Out.kr(busCount,DC.kr(1));
 			Out.ar(busOut,snd*db.dbamp);
 		}).send(server);
+		server.sync;
 
 		// setup oscs
 		oscs.put("loopinfo",OSCFunc({ arg msg;
@@ -375,6 +382,7 @@ Ouroboros2 {
 				busNoVerb: buses.at("noverb"),
 			]));
 			NodeWatcher.register(syns.at("input"));
+			server.sync;
 
 
 			// create ouroborous directory for saving recordings

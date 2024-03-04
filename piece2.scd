@@ -161,7 +161,6 @@ c7 e7 c7 e7 c7 e7 g7 c7 e7 c6 e6 g6 e7 g7 e7 g7 c7 g7 b7 d7 b7 g7 d6 g7 d6 b7 d7
 	//ServerMeter.new(s,2, 2);
 
 	p.putAll("output[4].slew=0.1;\n");
-	m.start();
 
 	Routine {
 		if (u.notNil,{
@@ -185,10 +184,12 @@ c7 e7 c7 e7 c7 e7 g7 c7 e7 c6 e6 g6 e7 g7 e7 g7 c7 g7 b7 d7 b7 g7 d6 g7 d6 b7 d7
 			// o.set("main","reverb",0.5);
 			// o.set("input","db",0.neg);
 
-		}, '/slider',);
+		}, '/slider',recvPort:7771);
 		0.1.wait;
 		o.set("main","reverb",0.2);
 		o.set("main","dbNoVerb",-96);
+		1.wait;
+     	m.start();
 	}.play;
 });
 )
