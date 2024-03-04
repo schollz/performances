@@ -22,3 +22,8 @@ conductor
 
 # Go workspace file
 go.work
+1.wav
+druid.log
+p5/p5
+p5/tmp/
+tmp/
