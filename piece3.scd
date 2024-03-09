@@ -141,7 +141,7 @@ c4 c4 a3 a3 c4 c4 f4 f4 e4 e4 e4 e4 g3 g3 b3 b3
 				if (value<10,{
 					o.set("main","dbNoVerb",-96);
 				},{
-					o.set("main","dbNoVerb",value.linlin(10,100,0,24));
+					o.set("main","dbNoVerb",value.linlin(10,100,-12,24));
 				});
 			}
 			{ o.set("loop"++(index-1),"db",value.linlin(0,100,-36,0)); }

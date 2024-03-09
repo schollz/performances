@@ -180,7 +180,7 @@ e7 c7 a7 c7 e7 a7 c7 a7 e7 g7 e7 g7 a7 g7 a7 e7 c7 a7 g7 e7 a7 c7 a7 e7 g7 c7 e7
 				if (value<10,{
 					o.set("main","dbNoVerb",-96);
 				},{
-					o.set("main","dbNoVerb",value.linlin(10,100,0,24));
+					o.set("main","dbNoVerb",value.linlin(10,100,-12,24));
 				});
 			}
 			{ o.set("loop"++(index-1),"db",value.linlin(0,100,-36,0)); }
