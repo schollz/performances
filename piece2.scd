@@ -186,8 +186,8 @@ c7 e7 c7 e7 c7 e7 g7 c7 e7 c6 e6 g6 e7 g7 e7 g7 c7 g7 b7 d7 b7 g7 d6 g7 d6 b7 d7
 
 		}, '/slider',recvPort:7771);
 		0.1.wait;
-		o.set("main","reverb",0.2);
-		o.set("main","dbNoVerb",-96);
+		o.set("main","reverb",0.4);
+		o.set("main","dbNoVerb",-2);
 		1.wait;
      	m.start();
 	}.play;

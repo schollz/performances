@@ -190,8 +190,8 @@ e7 c7 a7 c7 e7 a7 c7 a7 e7 g7 e7 g7 a7 g7 a7 e7 c7 a7 g7 e7 a7 c7 a7 e7 g7 c7 e7
 
 		}, '/slider',recvPort:7771);
 		0.1.wait;
-		o.set("main","reverb",0.2);
-		o.set("main","dbNoVerb",-96);
+		o.set("main","reverb",0.4);
+		o.set("main","dbNoVerb",-2);
 		1.wait;
 		m.start();
 	}.play;

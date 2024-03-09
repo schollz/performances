@@ -3,7 +3,7 @@
 t = Server.default.options;
 t.numInputBusChannels = 2;
 s.waitForBoot({
-	var bpm = 95;
+	var bpm = 88;
 	var recCount = 0;
 	var doRecord = true;
 	var loopNum = 0;
@@ -151,8 +151,8 @@ c4 c4 a3 a3 c4 c4 f4 f4 e4 e4 e4 e4 g3 g3 b3 b3
 
 		}, '/slider',recvPort:7771);
 		0.1.wait;
-		o.set("main","reverb",0.45);
-		o.set("main","dbNoVerb",-96);
+		o.set("main","reverb",0.41);
+		o.set("main","dbNoVerb",-2);
 		1.wait;
 			m.start();
 	}.play;
