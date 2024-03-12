@@ -302,7 +302,7 @@ Ouroboros2 {
 			snd = SelectX.ar(VarLag.kr(playhead,1.0,warp:\linear),[snd0,snd1]);
 
 			// random amplitude
-			snd = snd * LinLin.kr(ampOsc,-1,1,8.neg,3).dbamp;
+			snd = snd * LinLin.kr(ampOsc,-1,1,9.neg,4).dbamp;
 
 			// random pan
 			snd = Balance2.ar(snd[0],snd[1],pan + panOsc);
