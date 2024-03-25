@@ -1,0 +1,113 @@
+<html>
+
+<head>
+    <script src="/static/p5.js"></script>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            /* Ensure no scrollbars appear */
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        /*********************
+// Leaves
+// Description: Draws randomly falling confetti-like leaves
+// Credit: based on a sketch by @reona396 https://www.openprocessing.org/sketch/521545
+// Try It: https://editor.p5js.org/hello-p5/sketches/SyE6C5qMN
+*********************/
+
+        var sakuraNum = 100; // number of leaf objects
+        var fubuki = []; // array of leaf objects
+        var colors = []; // array containing the colors
+        var vertexPoint;
+
+        function setup() {
+            canvas = createCanvas(500, 500);
+            sakuraNum = 100;
+            for (var i = 0; i < sakuraNum; i++) {
+                fubuki.push(new Sakura());
+            }
+            noStroke();
+        }
+
+        function draw() {
+            clear();
+            background("#000000");
+            for (var i = 0; i < sakuraNum; i++) {
+                fubuki[i].draw();
+                fubuki[i].move();
+            }
+            // Reduce the number of leaves as the
+            if (window.videoCurrentTimeGlobal > 22) {
+                sakuraNum--;
+            }
+        }
+
+        Sakura = function () {
+            this.xDef = random(width);
+            this.xAmp = random(50, 100);
+            this.xSpeed = random(1, 2);
+            this.xTheta = random(360);
+            this.xcoord = this.xDef + this.xAmp * sin(radians(this.xTheta));
+            this.ycoord = random(height);
+            this.rotateT = random(360);
+            this.size = random(20, 50);
+            this.ySpeed = this.size / 20;
+            this.sizeYScale = 1;
+            this.sizeYT = random(360);
+            this.sizeYSpeed = this.size / 30;
+            this.c = floor(random(3));
+            vertexPoint = width / 50;
+
+            // Create each leaf
+            this.draw = function () {
+                fill(255);
+                push();
+                translate(this.xcoord, this.ycoord);
+                rotate(radians(this.rotateT));
+                beginShape();
+                vertex(abs(noise(this.ycoord, 6)) * vertexPoint, vertexPoint * 0.6);
+                vertex(abs(noise(this.ycoord, 5)) * vertexPoint, vertexPoint * 0.7);
+                vertex(abs(noise(this.ycoord, 4)) * vertexPoint, vertexPoint * 1.2);
+                vertex(abs(noise(this.ycoord, 2)) * vertexPoint, vertexPoint * 1.5);
+                vertex(abs(noise(this.ycoord, 3)) * vertexPoint, vertexPoint * 0.8);
+                vertex(abs(noise(this.ycoord, 1)) * vertexPoint, vertexPoint * 1.4);
+                endShape(CLOSE);
+                pop();
+            };
+            // make the leaf fall.
+            this.move = function () {
+                this.xcoord = this.xDef + this.xAmp * sin(radians(this.xTheta));
+                this.xTheta += this.xSpeed;
+                this.ycoord += this.ySpeed;
+                this.sizeYT += this.sizeYSpeed;
+                this.sizeYScale = abs(sin(radians(this.sizeYT)));
+                // reset leaf to top once it goes fully off the screen
+                if (this.ycoord > height + this.size) {
+                    this.ycoord = 0;
+                }
+                // change speed of the leaf depending on the mouse position
+                if (dist(mouseX, mouseY, this.xcoord, this.ycoord) < (width / 10)) {
+                    // move fast when close
+                    this.ySpeed = random(-15, 15) / 10;
+                    this.xSpeed = random(10, 15) / 10;
+                } else {
+                    // move slower when far
+                    this.ySpeed = this.size / 200;
+                    this.xSpeed = random(1, 2) / 10;
+                }
+            };
+        };
+
+
+
+    </script>
+</body>
+
+</html>
