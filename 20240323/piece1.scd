@@ -10,13 +10,13 @@ s.waitForBoot({
 	Routine {
 		1.wait;
 		o.syns.at("main").set(\dbLoop,0);
-		o.syns.at("main").set(\dbLive,6);
+		o.syns.at("main").set(\dbLive,0);
 		o.set("main","reverb",0.15);
 	}.play;
 });
 )
 
-o.syns.at("main").set(\dbLoop,0);
+o.syns.at("main").set(\dbLoop,6);
 (
 o.reset;
 m.stop;
