@@ -1,0 +1,314 @@
+<html>
+
+<head>
+    <script src="/static/p5.js"></script>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            /* Ensure no scrollbars appear */
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        var socket;
+        let windata = Array.from({ length: 128 }, () => [0, 0, 0]); // Initialize array
+        let height, width, radius, sliders;
+        let numberSliders;
+
+        const socketMessageListener = (e) => {
+            let data = JSON.parse(e.data);
+            console.log(data);
+            if (data.loop != undefined) {
+                const loopid = data.loop;
+                const x = Math.min(Math.max(data.x, -1), 1); // Clipping to -1 to 1
+                const y = Math.min(Math.max(data.y, -1), 1);
+                const db = data.db;
+                windata[loopid + 1] = [-1*x, -1*y, db]; // Update windata
+                // console.log(data.loop, data.x, data.y);
+            } else if (data.n != undefined) {
+                addFadingCircle(data.n);
+            }
+        };
+        const socketOpenListener = (e) => {
+            console.log('Connected');
+            socket.send(JSON.stringify({ message: "hello, server" }))
+        };
+        const socketErrorListener = (e) => {
+            console.error(e);
+        }
+        const socketCloseListener = (e) => {
+            if (socket) {
+                console.log('Disconnected.');
+            }
+            var url = window.origin.replace("http", "ws") + '/ws';
+            socket = new WebSocket(url);
+            socket.onopen = socketOpenListener;
+            socket.onmessage = socketMessageListener;
+            socket.onclose = socketCloseListener;
+            socket.onerror = socketErrorListener;
+        };
+        window.addEventListener('load', (event) => {
+            socketCloseListener();
+        });
+
+
+
+
+
+
+        function setup() {
+            width = windowWidth;
+            height = windowHeight;
+            radius = height / 10; // Update radius based on new height
+            createCanvas(width, height);
+            strokeWeight(4);
+
+            numberSliders = 9;
+            sliders = Array.from({ length: numberSliders }, (_, i) => {
+                return {
+                    x: 25,
+                    y: 25 + 35 * (i + 1),
+                    width: 380,
+                }
+            });
+
+            // create a slider for each
+            sliders.forEach((slider, i) => {
+                sliders[i].slider = createSlider(0, 100, 0);
+                sliders[i].slider.position(slider.x, slider.y);
+                sliders[i].slider.style('width', slider.width + "px");
+                sliders[i].slider.style('height', '7px'); // Make the actual slider thin
+                sliders[i].slider.style('opacity', '0.1'); // Make the slider slightly transparent to blend with the sketchy lines
+                // on slider move run function
+                sliders[i].slider.input(() => {
+                    let value = sliders[i].slider.value();
+                    socket.send(JSON.stringify({ action: "slider", index: i, number: value }));
+                });
+                sliders[i].slider.value(100);
+            });
+            sliders[0].slider.value(30);
+            sliders[1].slider.value(50);
+
+            // setInterval(addFadingCircle, 1000);
+            frameRate(30);
+        }
+
+        function invertColor(hex) {
+            return (Number(`0x1${hex}`) ^ 0xFFFFFF).toString(16).substr(1).toUpperCase()
+        }
+
+        // Define an array to hold the fading circles
+        let fadingCircles = [];
+
+        // Function to add a new fading circle
+        function addFadingCircle(val) {
+            // Add a new circle with random position, initial opacity, and size
+            let finalsize = random(60, 120);
+            let x = map(val, 24, 112, 0, width);
+            let y = random(0, height);
+            x = constrain(x, finalsize, width - finalsize);
+            y = constrain(y, finalsize, height - finalsize);
+            fadingCircles.push({
+                val: val,
+                x: x,
+                y: y,
+                inc: 1, // Random speed between 0.01 and 0.05
+                dec: 1,
+                opacity: 15, // Start fully opaque
+                size: 0, // Random size between 10 and 100
+                increasing: true,
+                finalsize: finalsize, // Random size between 10 and 100
+            });
+
+        }
+
+        function draw() {
+            blendMode(BLEND);
+            background('#fbf8cc'); // Using a color similar to #FFFAD7
+
+            const colors = [
+                invertColor("ffcfd2"),
+                invertColor("ffcfd2"),
+                invertColor("f1c0e8"),
+                invertColor("cfbaf0"),
+                invertColor("a3c4f3"),
+                invertColor("90dbf4"),
+                invertColor("90dbf4"),
+                invertColor("8eecf5"),
+            ];
+
+            // draw all the sliders
+            sliders.forEach((slider, i) => {
+                if (i > 1 && windata[i - 1][0] == 0 && windata[i - 1][1] == 0) {
+                    sliders[i].slider.style('opacity', '0.0');
+                    return;
+                }
+                sliders[i].slider.style('opacity', '0.1');
+                let x1 = slider.x;
+                let x2 = slider.x + slider.width;
+                let y = slider.y;
+                if (i > 1) {
+                    stroke('#' + colors[(i - 1) % colors.length]);
+                }
+                beginShape();
+                for (let x = x1; x < x2; x += 5) {
+                    let y = slider.y + noise(x * 0.01, frameCount * 0.01, i) * 20 - 5;
+                    vertex(x, y);
+                }
+                endShape();
+                // draw a filed circle with perlin noise at the slider value 
+                let value = slider.slider.value();
+                x = map(value, 0, 100, x1, x2);
+                y = slider.y + noise(x * 0.01, frameCount * 0.01, i) * 20 - 5;
+                line(x, y - 10, x, y + 10);
+            });
+
+
+            blendMode(EXCLUSION);
+
+
+            windata.forEach(([x, y, db], index) => {
+                if (x !== 0 || y !== 0) { // Check if data is not the initialized value
+                    let mappedX = ((x + 1) / 2) * (width - 3 * radius) + 2 * radius; // Map from -1 to 1 into 0 to width
+                    let mappedY = ((y + 1) / 2) * (height - 3 * radius) + 2 * radius; // Map from -1 to 1 into 0 to height
+                    // change opacity based on db
+                    noStroke();
+                    fill('#' + colors[index % colors.length]);
+                    // Begin drawing a sketchy circle using Perlin noise
+                    beginShape();
+                    for (let angle = 0; angle < TWO_PI; angle += 0.1) {
+                        let offset = map(noise(cos(angle) * 0.5 + 1, sin(angle) * 0.5 + 1, frameCount * 0.005 + index), 0, 1, -50, 50);
+                        let noisyRadius = radius * map(db, -96, 0, 0.001, 1) + offset + noise(frameCount / 30 * 0.01 + index) * 100;
+                        let x = mappedX + cos(angle) * noisyRadius;
+                        let y = mappedY + sin(angle) * noisyRadius;
+                        vertex(x, y);
+                    }
+                    endShape(CLOSE);
+                }
+            });
+
+
+            {
+                let index = 10;
+                breathScale = 1 + 400 * sin(frameCount / 30 / 4);
+                let mappedX = ((0 + 1) / 2) * (width); // Map from -1 to 1 into 0 to width
+                let mappedY = ((0 + 1) / 2) * (height); // Map from -1 to 1 into 0 to height
+                fill('#' + colors[index % colors.length]);
+                // Begin drawing a sketchy circle using Perlin noise
+                beginShape();
+                for (let angle = 0; angle < TWO_PI; angle += 0.1) {
+                    let offset = map(noise(cos(angle) * 0.5 + 1, sin(angle) * 0.5 + 1, frameCount * 0.005 + index), 0, 1, -50, 50);
+                    let noisyRadius = breathScale + offset + noise(frameCount / 30 * 0.01 + index) * 100;
+                    let x = mappedX + cos(angle) * noisyRadius;
+                    let y = mappedY + sin(angle) * noisyRadius;
+                    vertex(x, y);
+                }
+                endShape(CLOSE);
+            }
+
+            // Draw all the fading circles
+            for (let i = fadingCircles.length - 1; i >= 0; i--) {
+                let circle = fadingCircles[i];
+                fill('#' + colors[circle.val % colors.length] + circle.opacity); // Use RGBA for opacity
+                // fill(255, 255, 255, circle.opacity); // Use RGBA for opacity
+                noStroke();
+
+                // Update the size of the circle
+                if (circle.size <= circle.finalsize && circle.increasing) {
+                    circle.size += circle.inc; // Grow the circle until it reaches its max size
+                    if (circle.opacity < 80) {
+                        circle.opacity += circle.inc;
+                    }
+                } else {
+                    circle.increasing = false;
+                    circle.opacity -= circle.dec;
+                    circle.size -= circle.dec; // Once at max size, start shrinking
+                }
+
+                // Ensure the circle size does not become negative
+                circle.size = max(circle.size, 0);
+
+                // Draw the noisy circle
+                beginShape();
+                for (let angle = 0; angle < TWO_PI; angle += 0.1) {
+                    let offset = map(noise(cos(angle) * 0.5 + 1, sin(angle) * 0.5 + 1, circle.x, circle.y), 0, 1, -20, 20);
+                    let noisyRadius = offset + circle.size + noise(frameCount / 30 * 0.01, circle.x, circle.y) * 1;
+                    let x = circle.x + cos(angle) * noisyRadius;
+                    let y = circle.y + sin(angle) * noisyRadius;
+                    vertex(x, y);
+                }
+                endShape(CLOSE);
+
+                // Remove the circle from the array if it is completely faded and shrunk
+                if ((circle.size <= 5 || circle.opacity <= 10) && !circle.increasing) {
+                    fadingCircles.splice(i, 1);
+                }
+            }
+
+
+            blendMode(BLEND);
+            // no fill
+            stroke(0);
+            strokeWeight(4);
+            noFill();
+
+            windata.forEach(([x, y, db], index) => {
+                if (x !== 0 || y !== 0) { // Check if data is not the initialized value
+                    let mappedX = ((x + 1) / 2) * (width - 3 * radius) + 2 * radius; // Map from -1 to 1 into 0 to width
+                    let mappedY = ((y + 1) / 2) * (height - 3 * radius) + 2 * radius; // Map from -1 to 1 into 0 to height
+
+                    // Begin drawing a sketchy circle using Perlin noise
+                    beginShape();
+
+
+                    for (let angle = 0; angle < TWO_PI; angle += 0.1) {
+                        let offset = map(noise(cos(angle) * 0.4 + 1, sin(angle) * 0.4 + 1, frameCount * 0.006 + index), 0, 1, -50, 50);
+                        let noisyRadius = radius * map(db, -96, 0, 0.001, 1) + offset + noise(frameCount / 30 * 0.01 + index) * 100;
+                        let x = mappedX + cos(angle) * noisyRadius;
+                        let y = mappedY + sin(angle) * noisyRadius;
+                        vertex(x, y);
+                    }
+                    endShape(CLOSE);
+                }
+            });
+
+            stroke(0);
+
+
+            {
+
+                let index = 11;
+                breathScale = 1 + 400 * sin(frameCount / 30 / 4);
+                let mappedX = ((0 + 1) / 2) * (width); // Map from -1 to 1 into 0 to width
+                let mappedY = ((0 + 1) / 2) * (height); // Map from -1 to 1 into 0 to height
+                // Begin drawing a sketchy circle using Perlin noise
+                beginShape();
+                for (let angle = 0; angle < TWO_PI; angle += 0.1) {
+                    let offset = map(noise(cos(angle) * 0.5 + 1, sin(angle) * 0.5 + 1, frameCount * 0.005 + index), 0, 1, -50, 50);
+                    let noisyRadius = breathScale + offset + noise(frameCount / 30 * 0.01 + index) * 100;
+                    let x = mappedX + cos(angle) * noisyRadius;
+                    let y = mappedY + sin(angle) * noisyRadius;
+                    vertex(x, y);
+                }
+                endShape(CLOSE);
+            }
+
+
+        }
+
+        // Resize the canvas when the window is resized
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            width = windowWidth;
+            height = windowHeight;
+            radius = height / 10; // Update radius based on new height
+        }
+    </script>
+</body>
+
+</html>

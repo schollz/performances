@@ -1,30 +1,9 @@
-(
-Server.default.options.outDevice_("Voicemeeter Input (VB-Audio Voi");
-Server.default.options.inDevice_("Microphone (Scarlett 2i2 USB)");
-s.waitForBoot({
-	p = SerialPort.new(
-		"COM4",
-		baudrate: 115200
-	);
-	o=Ouroboros2.new(s);
-	Routine {
-		1.wait;
-		o.syns.at("main").set(\dbLoop,0);
-		o.syns.at("main").set(\dbLive,6);
-		o.set("main","reverb",0.15);
-	}.play;
-});
-)
 
 (
-o.reset;
-m.stop;
-)
-
-(
-~bpm = 90;
+t = Server.default.options;
+t.numInputBusChannels = 2;
 s.waitForBoot({
-	var bpm = ~bpm;
+	var bpm = 88;
 	var recCount = 0;
 	var doRecord = true;
 	var loopNum = 0;
@@ -42,14 +21,23 @@ s.waitForBoot({
 		});
 	});
 
-
+	p = SerialPort.new(
+		"/dev/ttyACM0",
+		baudrate: 115200
+	);
 	~crowSet = {
 		arg port, volts;
 		p.putAll("output["++port++"].volts="++volts++";\n");
 	};
-	p.putAll("output[4].action='{  to(10,"++(60/bpm/1)++",logarithmic), to(0.25,"++(60/bpm/1.0)++",exponential) }';\n");
+	p.putAll("output[4].action='{  to(10,"++(60/bpm/8)++",logarithmic), to(0.25,"++(60/bpm/4)++",exponential) }';\n");
 
 
+	// synthdefs
+	SynthDef("env1",{
+		arg port=2,attack=1,decay=1,sustain=0.5,release=1,dur=1;
+		var env = EnvGen.kr(Env.adsr(attack,decay,sustain,release),EnvGen.kr(Env.new([0,0,1],[dur,0.1])),10,doneAction:2);
+		SendReply.kr(Impulse.kr(10),"/env",[port,env]);
+	}).add;
 	OSCFunc({ arg msg, time, addr, recvPort;
 		// [msg, time, addr, recvPort].postln;
 		var port=msg[3].asInteger;
@@ -58,9 +46,17 @@ s.waitForBoot({
 		~crowSet.(port,env);
 	}, '/env');
 
+
+
+	o=Ouroboros2.new(s);
+	o.setCVCallback({ arg id, data;
+		// ~crowSet.(2,data);
+	});
+
+
 	// final
 	m=Miti.new(Server.default,bpm,"
-a2 f3 c3 g3
+a2 f2 c2 g2
 a3 a3 c4 b4
 c4 c4 g4 g4
 e5 f5 e5 d5
@@ -143,25 +139,22 @@ c4 c4 a3 a3 c4 c4 f4 f4 e4 e4 e4 e4 g3 g3 b3 b3
 			{ 0 } { o.set("main","reverb",value/100); }
 			{ 1 } {
 				if (value<10,{
-					o.set("main","dbLive",-96);
+					o.set("main","dbNoVerb",-96);
 				},{
-					o.set("main","dbLive",value.linlin(10,100,-12,8));
+					o.set("main","dbNoVerb",value.linlin(10,100,-12,24));
 				});
 			}
-			{
-				if (value<10,{
-					o.set("loop"++(index-1),"db",-96);
-				},{
-					o.set("loop"++(index-1),"db",value.linlin(0,100,-48,6));
-				});
-			}
+			{ o.set("loop"++(index-1),"db",value.linlin(0,100,-36,0)); }
 			{ };
 			// o.set("main","reverb",0.5);
 			// o.set("input","db",0.neg);
 
 		}, '/slider',recvPort:7771);
-
-		m.start();
+		0.1.wait;
+		o.set("main","reverb",0.41);
+		o.set("main","dbNoVerb",-2);
+		1.wait;
+			m.start();
 	}.play;
 });
 )

@@ -1,32 +1,9 @@
+
 (
-Server.default.options.outDevice_("Voicemeeter Input (VB-Audio Voi");
-Server.default.options.inDevice_("Microphone (Scarlett 2i2 USB)");
+t = Server.default.options;
+t.numInputBusChannels = 2;
 s.waitForBoot({
-	p = SerialPort.new(
-		"COM4",
-		baudrate: 115200
-	);
-	o=Ouroboros2.new(s);
-	Routine {
-		1.wait;
-		o.syns.at("main").set(\dbLoop,0);
-		o.syns.at("main").set(\dbLive,0);
-		o.set("main","reverb",0.15);
-	}.play;
-});
-)
-
-o.syns.at("main").set(\dbLoop,6);
-(
-o.reset;
-m.stop;
-)
-
-
-(
-~bpm = 90;
-s.waitForBoot({
-	var bpm = ~bpm;
+	var bpm = 90;
 	var recCount = 0;
 	var doRecord = true;
 	var loopNum = 0;
@@ -44,12 +21,23 @@ s.waitForBoot({
 		});
 	});
 
+	p = SerialPort.new(
+		"/dev/ttyACM0",
+		baudrate: 115200
+	);
 	~crowSet = {
 		arg port, volts;
 		p.putAll("output["++port++"].volts="++volts++";\n");
 	};
-	p.putAll("output[4].action='{  to(10,"++(60/~bpm/1)++",logarithmic), to(0.25,"++(60/~bpm)++",exponential) }';\n");
+	p.putAll("output[4].action='{  to(10,"++(60/bpm/8)++",logarithmic), to(0.25,"++(60/bpm)++",exponential) }';\n");
 
+
+	// synthdefs
+	SynthDef("env1",{
+		arg port=2,attack=1,decay=1,sustain=0.5,release=1,dur=1;
+		var env = EnvGen.kr(Env.adsr(attack,decay,sustain,release),EnvGen.kr(Env.new([0,0,1],[dur,0.1])),10,doneAction:2);
+		SendReply.kr(Impulse.kr(10),"/env",[port,env]);
+	}).add;
 	OSCFunc({ arg msg, time, addr, recvPort;
 		// [msg, time, addr, recvPort].postln;
 		var port=msg[3].asInteger;
@@ -58,9 +46,14 @@ s.waitForBoot({
 		~crowSet.(port,env);
 	}, '/env');
 
+
+
+	o=Ouroboros2.new(s);
 	o.setCVCallback({ arg id, data;
 		// ~crowSet.(2,data);
 	});
+
+
 
 	// melody3.py
 	// Am G F Em7
@@ -97,8 +90,9 @@ e7 c7 a7 c7 e7 a7 c7 a7 e7 g7 e7 g7 a7 g7 a7 e7 c7 a7 g7 e7 a7 c7 a7 e7 g7 c7 e7
 		p.putAll("output[3]();\n");
 	});
 	m.setCallbackNote({ arg note;
-		// ["note",note].postln;
+		["note",note].postln;
 		if (noteLast!=note,{
+			"output4".postln;
 			p.putAll("output[4]();\n");
 			noteLast = note;
 		});
@@ -113,8 +107,59 @@ e7 c7 a7 c7 e7 a7 c7 a7 e7 g7 e7 g7 a7 g7 a7 e7 c7 a7 g7 e7 a7 c7 a7 e7 g7 c7 e7
 
 		if (loopNum<loopRecordMax,{
 			o.record("loop"++loopNum.mod(8),16.0 * 60 / bpm);
+			/*			if (loopNum==1,{
+			o.recordCV(1,16.0 * 60 / bpm);
+			});*/
 		});
 	});
+	m.setCallbackScore({
+		// ["callbackScore"].postln;
+		// doRecord = false;
+
+	});
+
+	~scale=scale;
+	OSCFunc({ arg msg, time, addr, recvPort;
+		// [msg, time, addr, recvPort].postln;
+		var hand=msg[1].asString;
+		var gesture=msg[2].asString;
+		var x=msg[3].asFloat;
+		var y=msg[4].asFloat;
+		var data=x.linlin(0.54,1,0,10);
+		var note;
+		if (hand.asString=="right",{
+			// right hand controls pitches
+			// left hand steps in triads
+			handNote = y.linlin(0.0,1,-7,7).round;
+			note = scale[handNote+(handOctave*3)];
+			if (x>0.9,{
+				note = note + 12;
+			});
+			if (x<0.7,{
+				note = note - 12;
+			});
+			if (note.notNil,{
+				if (gesture.asString=="closed",{
+				},{
+					note.postln;
+					~crowSet.(1,(note-36)/12);
+				});
+			});
+		});
+		if (hand.asString=="left",{
+			handOctave = y.linlin(0.0,1,0,12).round;
+			// if (loopNum>loopNumMax,{
+			// 	~crowSet.(1,(handNote-48+(handOctave*5))/12);
+			// });
+
+			// crow 2 ->  FM 1. FM1 knob fully CW
+			~crowSet.(2,x.linlin(0,0.5,0,10));
+			// crow 3 -> GAIN. GAIN knob at 8pm
+			~crowSet.(3,x.linlin(0,1,0,4));
+		});
+	}, '/conductor');
+
+
 
 
 	//ServerMeter.new(s,2, 2);
@@ -133,24 +178,21 @@ e7 c7 a7 c7 e7 a7 c7 a7 e7 g7 e7 g7 a7 g7 a7 e7 c7 a7 g7 e7 a7 c7 a7 e7 g7 c7 e7
 			{ 0 } { o.set("main","reverb",value/100); }
 			{ 1 } {
 				if (value<10,{
-					o.set("main","dbLive",-96);
+					o.set("main","dbNoVerb",-96);
 				},{
-					o.set("main","dbLive",value.linlin(10,100,-12,8));
+					o.set("main","dbNoVerb",value.linlin(10,100,-12,24));
 				});
 			}
-			{
-				if (value<10,{
-					o.set("loop"++(index-1),"db",-96);
-				},{
-					o.set("loop"++(index-1),"db",value.linlin(0,100,-48,6));
-				});
-			}
+			{ o.set("loop"++(index-1),"db",value.linlin(0,100,-36,0)); }
 			{ };
 			// o.set("main","reverb",0.5);
 			// o.set("input","db",0.neg);
 
 		}, '/slider',recvPort:7771);
-
+		0.1.wait;
+		o.set("main","reverb",0.4);
+		o.set("main","dbNoVerb",-2);
+		1.wait;
 		m.start();
 	}.play;
 });
@@ -158,7 +200,3 @@ e7 c7 a7 c7 e7 a7 c7 a7 e7 g7 e7 g7 a7 g7 a7 e7 c7 a7 g7 e7 a7 c7 a7 e7 g7 c7 e7
 
 
 
-
-(
-{XLine.kr(0.001,1.0,0.1)}.plot(0.1)
-)
