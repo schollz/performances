@@ -19,53 +19,53 @@ Ouroboros2 {
 
 	play {
 		arg id;
-		if (bufs.at(id).notNil,{
-			Routine {
-				var bufdisk = Buffer.alloc(server,65536, 2);
-				var filename = saveDir++"/loop_"++id++"_1";
+		["playing loop"+id].postln;
+
+		Routine {
+			var bufdisk = Buffer.alloc(server,65536, 2);
+			var filename = saveDir++"/loop_"++id++"_1";
+			filename = filename.asString.standardizePath;
+			while { File.exists(filename ++ ".wav") } {
+				filename = PathName(filename).nextName;
 				filename = filename.asString.standardizePath;
-				while { File.exists(filename ++ ".wav") } {
-					filename = PathName(filename).nextName;
-					filename = filename.asString.standardizePath;
-				};
-				filename = filename ++".wav";
+			};
+			filename = filename ++".wav";
 
-				server.sync;
-				bufdisk.postln;
-				["[ouro] loop saving to file: "++filename].postln;
-				bufdisk.write(filename.standardizePath, "wav", "int16", 0, 0, true,{
-					arg bdisk;
-					var args=[
-						buf: bufs.at(id),
-						busOut: buses.at("main"),
-						busMetronome: buses.at("metronome"),
-						busCount: buses.at("count"),
-						bufDisk: bdisk,
-						id: loopCount,
-					];
-					if (params.at(id).notNil,{
-						params.at(id).keysValuesDo({ arg k, v;
-							args=args++[k,v];
-						});
+			server.sync;
+			bufdisk.postln;
+			["[ouro] loop saving to file: "++filename].postln;
+			bufdisk.write(filename.standardizePath, "wav", "int16", 0, 0, true,{
+				arg bdisk;
+				var args=[
+					buf: bufs.at(id),
+					busOut: buses.at("main"),
+					busMetronome: buses.at("metronome"),
+					busCount: buses.at("count"),
+					bufDisk: bdisk,
+					id: loopCount,
+				];
+/*				if (params.at(id).notNil,{
+					params.at(id).keysValuesDo({ arg k, v;
+						args=args++[k,v];
 					});
-					["[ouro] play args:",args].postln;
+				});*/
+				["[ouro] play args:",args].postln;
 
-					if (syns.at(id).notNil,{
-						["[ouro] sending done to loop",id].postln;
-						syns.at(id).set(\gate,0);
-					});
-					["[ouro] started playing loop",id].postln;
-					syns.put(id,Synth.after(syns.at("metronome"),"looperAudio",args).onFree({
-						["[ouro] stopped playing loop",id].postln;
-						// close the buffer for the written file
-						bdisk.close;
-						bdisk.free;
-					}));
-					NodeWatcher.register(syns.at(id));
-					loopCount = loopCount + 1;
+				if (syns.at(id).notNil,{
+					["[ouro] sending done to loop",id].postln;
+					syns.at(id).set(\gate,0);
 				});
-			}.play;
-		});
+				["[ouro] started playing loop",id].postln;
+				syns.put(id,Synth.after(syns.at("metronome"),"looperAudio",args).onFree({
+					["[ouro] stopped playing loop",id].postln;
+					// close the buffer for the written file
+					bdisk.close;
+					bdisk.free;
+				}));
+				NodeWatcher.register(syns.at(id));
+				loopCount = loopCount + 1;
+			});
+		}.play;
 	}
 
 	prime {
@@ -92,6 +92,9 @@ Ouroboros2 {
 
 		// allocate buffer and record the loop
 		Buffer.alloc(server,seconds*server.sampleRate,2,completionMessage:{ arg buf;
+			if (bufs.at(id).notNil,{
+				bufs.at(id).free;
+			});
 			bufs.put(id,buf);
 			["[ouro] started recording loop",id].postln;
 			syns.put("record"++id,Synth.after(syns.at("input"),"recorderAudio",[
@@ -184,22 +187,19 @@ Ouroboros2 {
 
 		// main output
 		SynthDef("main",{
-			arg busIn, busLive, busNoVerb, busOut, busCount, db=0, reverb=0, dbNoVerb=0;
+			arg busIn, busLive, busOut, busCount, db=0, reverb=0,dbLoop=0,dbLive=0;
 			var snd;
-			var sndNoVerb;
 			var count;
-			count = Clip.kr(In.kr(busCount,1)/5,1,30);
-			snd = In.ar(busIn,2);
-			sndNoVerb = In.ar(busNoVerb, 2) * Lag.kr(dbNoVerb.dbamp);
+			count = Lag.kr(Clip.kr(In.kr(busCount,1),2,30),5)/2.0;
 
-			snd = (snd/count) + In.ar(busLive,2);
+			snd = ((In.ar(busIn,2)*Lag.kr(dbLoop,2).dbamp) + (In.ar(busLive,2)*Lag.kr(dbLive,2).dbamp)) / 2;
+			/// count.poll;
 
 			snd = snd * EnvGen.ar(Env.adsr(10,1,1,1));
 
 			snd = RHPF.ar(snd,65.41,0.101);
 
 			snd = AnalogTape.ar(snd,0.9,0.9,0.7,2);
-			sndNoVerb = AnalogTape.ar(sndNoVerb,0.9,0.9,0.7,1);
 
 			snd = SelectX.ar(Lag.kr(reverb,5),[snd,
 				Fverb.ar(snd[0],snd[1],200,
@@ -208,40 +208,23 @@ Ouroboros2 {
 				)
 			]);
 
-			snd = Compander.ar(snd, sndNoVerb, 0.1, 1.0, 0.1, 0.05, 0.3);
-			snd = snd + sndNoVerb;
-
-			snd = Limiter.ar(snd)*0.75;
 			Out.ar(busOut,snd * Lag.kr(db,30).dbamp);
 		}).send(server);
 		server.sync;
 
 		SynthDef("input",{
-			arg busOut,busRecord,busNoVerb, lpf=135, db=3.neg;
+			arg busOut,busRecord,busNoVerb, lpf=135;
 			var snd, incomingFreq, hasFreq, freq;
 			var sndR;
 
-			snd = SoundIn.ar([1]);
-			snd = Pan2.ar(snd);
-			sndR = SoundIn.ar([0]);
-			sndR = Pan2.ar(sndR);
-			snd = snd + In.ar(busRecord,2);
-			// temp
-			// snd = Pan2.ar(Mix.new(snd));
-
-
-			// filter the input baesd on bandpass filter around the detected pitch
-			// # freq, hasFreq = Pitch.kr(Mix.new(snd), ampThreshold: 0.02, median: 7);
-			// incomingFreq = 20+Lag.kr(Latch.kr(freq,hasFreq),1);
-			// snd = LPF.ar(snd,incomingFreq*4);
-			// snd = HPF.ar(snd,incomingFreq*0.25);
+			snd = SoundIn.ar([0,1]);
 
 			lpf = Clip.kr(lpf,20,135);
 
 			snd = RLPF.ar(snd,lpf.midicps,0.707);
-			Out.ar(busNoVerb, sndR);
+
 			Out.ar(busRecord,snd);
-			Out.ar(busOut,snd * db.dbamp);
+			Out.ar(busOut,snd);
 		}).send(server);
 		server.sync;
 
@@ -293,8 +276,8 @@ Ouroboros2 {
 			arg busMetronome, busOut, busCount, buf, db=0, pan=0, gate=1, bufDisk, id;
 			var playhead, snd0, snd1, snd;
 			var tr=In.kr(busMetronome,1);
-			var ampOsc = SinOsc.kr(1/Rand(15,45),Rand(0,3.14));
-			var panOsc = SinOsc.kr(1/Rand(15,45),Rand(0,3.14));
+			var ampOsc = SinOsc.kr(1/Rand(30,45),Rand(0,3.14))*XLine.kr(0.001,1.0,Rand(5,16));
+			var panOsc = SinOsc.kr(1/Rand(30,45),Rand(0,3.14))*XLine.kr(0.001,1.0,dur:Rand(5,16));
 			db = Lag.kr(db,0.2);
 			playhead = ToggleFF.kr(tr);
 			snd0 = PlayBuf.ar(2,buf,rate:BufRateScale.ir(buf),loop:1,trigger:1-playhead);
@@ -302,14 +285,14 @@ Ouroboros2 {
 			snd = SelectX.ar(VarLag.kr(playhead,1.0,warp:\linear),[snd0,snd1]);
 
 			// random amplitude
-			snd = snd * LinLin.kr(ampOsc,-1,1,9.neg,4).dbamp;
+			snd = snd * LinLin.kr(ampOsc,-1,1,14.neg,0).dbamp;
 
 			// random pan
 			snd = Balance2.ar(snd[0],snd[1],pan + panOsc);
 
 			DiskOut.ar(bufDisk, snd * db.dbamp);
 			// adsr
-			snd = snd * EnvGen.ar(Env.adsr(2,1,1,10),gate:gate,doneAction:2);
+			snd = snd * EnvGen.ar(Env.adsr(0.1,1,1,10),gate:gate,doneAction:2);
 
 			SendReply.kr(Changed.kr(playhead),"/playhead",[buf]);
 
@@ -352,8 +335,6 @@ Ouroboros2 {
 			// ["cv id=",id,"data=",data].postln;
 		}, '/cv'));
 
-
-
 		// setup buses
 		buses.put("input",Bus.audio(server,2));
 		buses.put("record",Bus.audio(server,2));
@@ -371,7 +352,7 @@ Ouroboros2 {
 				busOut: 0,
 				busIn: buses.at("main"),
 				busLive: buses.at("input"),
-				busNoVerb: buses.at("noverb"),
+				busCount: buses.at("count"),
 			]));
 			NodeWatcher.register(syns.at("main"));
 			server.sync;
@@ -379,7 +360,6 @@ Ouroboros2 {
 				busOut: buses.at("input"),
 				busRecord: buses.at("record"),
 				busCount: buses.at("count"),
-				busNoVerb: buses.at("noverb"),
 			]));
 			NodeWatcher.register(syns.at("input"));
 			server.sync;
@@ -409,6 +389,19 @@ Ouroboros2 {
 		syns.put(id,Synth.after(syns.at("metronome"),"looperAudio",args));
 	}
 
+	reset {
+		// stop this one
+		syns.keys.do({ |key|
+			if (key.beginsWith("loo"),{
+				var syn = syns.at(key);
+				if (syn.isRunning,{
+					syns.at(key).set(\gate,0);
+					syns.put(key,nil);
+				});
+			});
+		});
+		loopCount = 0;
+	}
 
 	free {
 		bufs.keysValuesDo({ arg k, val;

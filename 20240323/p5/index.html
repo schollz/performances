@@ -22,6 +22,7 @@
 
         const socketMessageListener = (e) => {
             let data = JSON.parse(e.data);
+            console.log(data);
             if (data.loop != undefined) {
                 const loopid = data.loop;
                 const x = Math.min(Math.max(data.x, -1), 1); // Clipping to -1 to 1
@@ -182,7 +183,7 @@
                     beginShape();
                     for (let angle = 0; angle < TWO_PI; angle += 0.1) {
                         let offset = map(noise(cos(angle) * 0.5 + 1, sin(angle) * 0.5 + 1, frameCount * 0.005 + index), 0, 1, -50, 50);
-                        let noisyRadius = radius * map(db, -32, 0, 0.001, 1) + offset + noise(frameCount / 30 * 0.01 + index) * 100;
+                        let noisyRadius = radius * map(db, -96, 0, 0.001, 1) + offset + noise(frameCount / 30 * 0.01 + index) * 100;
                         let x = mappedX + cos(angle) * noisyRadius;
                         let y = mappedY + sin(angle) * noisyRadius;
                         vertex(x, y);
@@ -267,7 +268,7 @@
 
                     for (let angle = 0; angle < TWO_PI; angle += 0.1) {
                         let offset = map(noise(cos(angle) * 0.4 + 1, sin(angle) * 0.4 + 1, frameCount * 0.006 + index), 0, 1, -50, 50);
-                        let noisyRadius = radius * map(db, -32, 0, 0.001, 1) + offset + noise(frameCount / 30 * 0.01 + index) * 100;
+                        let noisyRadius = radius * map(db, -96, 0, 0.001, 1) + offset + noise(frameCount / 30 * 0.01 + index) * 100;
                         let x = mappedX + cos(angle) * noisyRadius;
                         let y = mappedY + sin(angle) * noisyRadius;
                         vertex(x, y);
