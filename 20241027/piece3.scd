@@ -9,8 +9,8 @@ s.waitForBoot({
 	o=Ouroboros2.new(s);
 	Routine {
 		1.wait;
-		o.syns.at("main").set(\dbLoop,0);
-		o.syns.at("main").set(\dbLive,6);
+		o.syns.at("main").set(\dbLoop,6);
+		o.syns.at("main").set(\dbLive,0);
 		o.set("main","reverb",0.15);
 	}.play;
 });
@@ -47,7 +47,7 @@ s.waitForBoot({
 		arg port, volts;
 		p.putAll("output["++port++"].volts="++volts++";\n");
 	};
-	p.putAll("output[4].action='{  to(10,"++(60/bpm/1)++",logarithmic), to(0.25,"++(60/bpm/1.0)++",exponential) }';\n");
+	p.putAll("output[4].action='{  to(10,"++(60/bpm/1)++",logarithmic), to(0.25,"++(60/bpm/1.5)++",exponential) }';\n");
 
 
 	OSCFunc({ arg msg, time, addr, recvPort;
