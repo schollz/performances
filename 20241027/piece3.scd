@@ -9,7 +9,7 @@ s.waitForBoot({
 	o=Ouroboros2.new(s);
 	Routine {
 		1.wait;
-		o.syns.at("main").set(\dbLoop,6);
+		o.syns.at("main").set(\dbLoop,8);
 		o.syns.at("main").set(\dbLive,0);
 		o.set("main","reverb",0.15);
 	}.play;
