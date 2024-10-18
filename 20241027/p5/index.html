@@ -28,7 +28,7 @@
                 const x = Math.min(Math.max(data.x, -1), 1); // Clipping to -1 to 1
                 const y = Math.min(Math.max(data.y, -1), 1);
                 const db = data.db;
-                windata[loopid + 1] = [-1*x, -1*y, db]; // Update windata
+                windata[loopid + 1] = [-1 * x, -1 * y, db]; // Update windata
                 // console.log(data.loop, data.x, data.y);
             } else if (data.n != undefined) {
                 addFadingCircle(data.n);
@@ -129,17 +129,17 @@
 
         function draw() {
             blendMode(BLEND);
-            background('#fbf8cc'); // Using a color similar to #FFFAD7
+            background('#000'); // Using a color similar to #FFFAD7
 
             const colors = [
-                invertColor("ffcfd2"),
-                invertColor("ffcfd2"),
-                invertColor("f1c0e8"),
-                invertColor("cfbaf0"),
-                invertColor("a3c4f3"),
-                invertColor("90dbf4"),
-                invertColor("90dbf4"),
-                invertColor("8eecf5"),
+                invertColor("eee"),
+                invertColor("eee"),
+                invertColor("eee"),
+                invertColor("eee"),
+                invertColor("eee"),
+                invertColor("eee"),
+                invertColor("eee"),
+                invertColor("eee"),
             ];
 
             // draw all the sliders
