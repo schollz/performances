@@ -95,7 +95,7 @@
             sliders[1].slider.value(50);
 
             // setInterval(addFadingCircle, 1000);
-            frameRate(30);
+            frameRate(15);
         }
 
         function invertColor(hex) {
@@ -154,6 +154,8 @@
                 let y = slider.y;
                 if (i > 1) {
                     stroke('#' + colors[(i - 1) % colors.length]);
+                } else {
+                    stroke('#' + colors[i % colors.length]);
                 }
                 beginShape();
                 for (let x = x1; x < x2; x += 5) {
@@ -298,8 +300,79 @@
                 endShape(CLOSE);
             }
 
-
+            applyDithering();
         }
+
+        function applyDithering(pixelSize = 5) {
+            loadPixels();  // Load pixel data into the `pixels[]` array
+
+            // make LFO for the noise
+            let noiseFactor = noise(frameCount / 30 * 0.01) * 10;
+            console.log(noiseFactor);
+            for (let y = 0; y < height; y += pixelSize) {
+                for (let x = 0; x < width; x += pixelSize) {
+                    let index = (x + y * width) * 4;
+
+                    // Get the grayscale value of the top-left pixel in the block
+                    let oldPixel = (pixels[index] + pixels[index + 1] + pixels[index + 2]) / 3;
+
+                    // Add random noise to the oldPixel value (noiseFactor controls the strength of the noise)
+                    let noise = random(-noiseFactor, noiseFactor);
+                    oldPixel = constrain(oldPixel + noise, 0, 255);  // Ensure the pixel value stays within [0, 255]
+
+                    let newPixel = oldPixel > 127 ? 255 : 0;  // Quantize to black or white
+                    let error = oldPixel - newPixel;  // Compute the quantization error
+
+                    // Set the new pixel value for the entire block
+                    for (let dy = 0; dy < pixelSize; dy++) {
+                        for (let dx = 0; dx < pixelSize; dx++) {
+                            let blockIndex = ((x + dx) + (y + dy) * width) * 4;
+                            if (blockIndex < pixels.length) {  // Ensure we don't go out of bounds
+                                pixels[blockIndex] = newPixel;
+                                pixels[blockIndex + 1] = newPixel;
+                                pixels[blockIndex + 2] = newPixel;
+                            }
+                        }
+                    }
+
+                    // Distribute the error to neighboring pixels (only affecting the top-left pixel)
+                    if (x + pixelSize < width) {
+                        // Pixel to the right (x + pixelSize, y)
+                        let rightIndex = ((x + pixelSize) + y * width) * 4;
+                        pixels[rightIndex] += error * (7 / 16);
+                        pixels[rightIndex + 1] += error * (7 / 16);
+                        pixels[rightIndex + 2] += error * (7 / 16);
+                    }
+
+                    if (y + pixelSize < height) {
+                        // Pixel below (x, y + pixelSize)
+                        let belowIndex = (x + (y + pixelSize) * width) * 4;
+                        pixels[belowIndex] += error * (5 / 16);
+                        pixels[belowIndex + 1] += error * (5 / 16);
+                        pixels[belowIndex + 2] += error * (5 / 16);
+
+                        if (x - pixelSize >= 0) {
+                            // Pixel below-left (x - pixelSize, y + pixelSize)
+                            let belowLeftIndex = ((x - pixelSize) + (y + pixelSize) * width) * 4;
+                            pixels[belowLeftIndex] += error * (3 / 16);
+                            pixels[belowLeftIndex + 1] += error * (3 / 16);
+                            pixels[belowLeftIndex + 2] += error * (3 / 16);
+                        }
+
+                        if (x + pixelSize < width) {
+                            // Pixel below-right (x + pixelSize, y + pixelSize)
+                            let belowRightIndex = ((x + pixelSize) + (y + pixelSize) * width) * 4;
+                            pixels[belowRightIndex] += error * (1 / 16);
+                            pixels[belowRightIndex + 1] += error * (1 / 16);
+                            pixels[belowRightIndex + 2] += error * (1 / 16);
+                        }
+                    }
+                }
+            }
+
+            updatePixels();  // Apply the modified pixel data back to the canvas
+        }
+
 
         // Resize the canvas when the window is resized
         function windowResized() {
