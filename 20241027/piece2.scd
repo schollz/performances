@@ -23,6 +23,7 @@ m.stop;
 
 (
 ~bpm = 80;
+NetAddr("127.0.0.1", 8123).sendMsg("/texty","part ii of iii","<br><i>to see a candle's brighntess</i>","<br><i>you must take it into the dark.</i>");
 s.waitForBoot({
 	var bpm = ~bpm;
 	var recCount = 0;

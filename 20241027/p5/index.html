@@ -3,22 +3,53 @@
 <head>
     <script src="/static/p5.js"></script>
     <style>
+        @font-face {
+            font-family: 'uni 05_53';
+            font-style: normal;
+            font-weight: 400;
+            src: local('uni 05_53'), local('uni05_53-Regular'), url(/static/uni-05_53_8dd1788135e93e81fb9993c630d92da3.woff) format('woff'), url(/static/uni-05_53_8dd1788135e93e81fb9993c630d92da3.ttf) format('truetype');
+        }
+
         body,
         html {
             margin: 0;
             padding: 0;
             overflow: hidden;
-            /* Ensure no scrollbars appear */
+            font-family: 'uni 05_53';
+        }
+
+        div {
+            position: absolute;
+            top: 7.5%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2em;
+            color: #eee;
+            text-align: center;
+            z-index: 10000;
         }
     </style>
 </head>
 
 <body>
+    <div id="app"></div>
+    <script src="https://unpkg.com/typewriter-effect@latest/dist/core.js"></script>
     <script>
         var socket;
         let windata = Array.from({ length: 128 }, () => [0, 0, 0]); // Initialize array
         let height, width, radius, sliders;
         let numberSliders;
+
+        // dictionary of text
+        var text_to_display = [
+            "text1",
+            "text2",
+        ];
+        var app = document.getElementById('app');
+
+        var typewriter = null;
+
+
 
         const socketMessageListener = (e) => {
             let data = JSON.parse(e.data);
@@ -32,6 +63,30 @@
                 // console.log(data.loop, data.x, data.y);
             } else if (data.n != undefined) {
                 addFadingCircle(data.n);
+            } else if (data.text1 != undefined) {
+                console.log("updating typewriter")
+                if (typewriter != null) {
+                    typewriter.deleteAll('natural');
+                    typewriter.stop();
+                }
+                setTimeout(() => {
+                    typewriter = new Typewriter(app, {
+                        loop: false,
+                        delay: 170,
+                        cursor: '<span style="color: #fefefe;">|</span>',
+                    });
+
+                    typewriter
+                        .pauseFor(3000)
+                        .typeString(data.text1)
+                        .pauseFor(3000)
+                        .typeString(data.text2)
+                        .pauseFor(3000)
+                        .typeString(data.text3)
+                        .pauseFor(3000)
+                        .deleteAll('natural')
+                        .start();
+                }, 1000);
             }
         };
         const socketOpenListener = (e) => {
@@ -58,7 +113,7 @@
 
 
 
-
+        var frame_rate_num = 10;
 
 
         function setup() {
@@ -95,7 +150,7 @@
             sliders[1].slider.value(50);
 
             // setInterval(addFadingCircle, 1000);
-            frameRate(15);
+            frameRate(frame_rate_num);
         }
 
         function invertColor(hex) {
@@ -187,7 +242,7 @@
                     beginShape();
                     for (let angle = 0; angle < TWO_PI; angle += 0.1) {
                         let offset = map(noise(cos(angle) * 0.5 + 1, sin(angle) * 0.5 + 1, frameCount * 0.005 + index), 0, 1, -50, 50);
-                        let noisyRadius = radius * map(db, -96, 0, 0.001, 1) + offset + noise(frameCount / 15 * 0.01 + index) * 100;
+                        let noisyRadius = radius * map(db, -96, 0, 0.001, 1) + offset + noise(frameCount / frame_rate_num * 0.01 + index) * 100;
                         let x = mappedX + cos(angle) * noisyRadius;
                         let y = mappedY + sin(angle) * noisyRadius;
                         vertex(x, y);
@@ -199,7 +254,7 @@
 
             {
                 let index = 10;
-                breathScale = 1 + 400 * sin(frameCount / 15 / 4);
+                breathScale = 1 + 300 * sin(frameCount / frame_rate_num / 4);
                 let mappedX = ((0 + 1) / 2) * (width); // Map from -1 to 1 into 0 to width
                 let mappedY = ((0 + 1) / 2) * (height); // Map from -1 to 1 into 0 to height
                 fill('#' + colors[index % colors.length]);
@@ -207,7 +262,7 @@
                 beginShape();
                 for (let angle = 0; angle < TWO_PI; angle += 0.1) {
                     let offset = map(noise(cos(angle) * 0.5 + 1, sin(angle) * 0.5 + 1, frameCount * 0.005 + index), 0, 1, -50, 50);
-                    let noisyRadius = breathScale + offset + noise(frameCount / 15 * 0.01 + index) * 100;
+                    let noisyRadius = breathScale + offset + noise(frameCount / frame_rate_num * 0.01 + index) * 100;
                     let x = mappedX + cos(angle) * noisyRadius;
                     let y = mappedY + sin(angle) * noisyRadius;
                     vertex(x, y);
@@ -241,7 +296,7 @@
                 beginShape();
                 for (let angle = 0; angle < TWO_PI; angle += 0.1) {
                     let offset = map(noise(cos(angle) * 0.5 + 1, sin(angle) * 0.5 + 1, circle.x, circle.y), 0, 1, -20, 20);
-                    let noisyRadius = offset + circle.size + noise(frameCount / 15 * 0.01, circle.x, circle.y) * 1;
+                    let noisyRadius = offset + circle.size + noise(frameCount / frame_rate_num * 0.01, circle.x, circle.y) * 1;
                     let x = circle.x + cos(angle) * noisyRadius;
                     let y = circle.y + sin(angle) * noisyRadius;
                     vertex(x, y);
@@ -272,7 +327,7 @@
 
                     for (let angle = 0; angle < TWO_PI; angle += 0.1) {
                         let offset = map(noise(cos(angle) * 0.4 + 1, sin(angle) * 0.4 + 1, frameCount * 0.006 + index), 0, 1, -50, 50);
-                        let noisyRadius = radius * map(db, -96, 0, 0.001, 1) + offset + noise(frameCount / 15 * 0.01 + index) * 100;
+                        let noisyRadius = radius * map(db, -96, 0, 0.001, 1) + offset + noise(frameCount / frame_rate_num * 0.01 + index) * 100;
                         let x = mappedX + cos(angle) * noisyRadius;
                         let y = mappedY + sin(angle) * noisyRadius;
                         vertex(x, y);
@@ -287,14 +342,14 @@
             {
 
                 let index = 11;
-                breathScale = 1 + 400 * sin(frameCount / 15 / 4);
+                breathScale = 1 + 300 * sin(frameCount / frame_rate_num / 4);
                 let mappedX = ((0 + 1) / 2) * (width); // Map from -1 to 1 into 0 to width
                 let mappedY = ((0 + 1) / 2) * (height); // Map from -1 to 1 into 0 to height
                 // Begin drawing a sketchy circle using Perlin noise
                 beginShape();
                 for (let angle = 0; angle < TWO_PI; angle += 0.1) {
                     let offset = map(noise(cos(angle) * 0.5 + 1, sin(angle) * 0.5 + 1, frameCount * 0.005 + index), 0, 1, -50, 50);
-                    let noisyRadius = breathScale + offset + noise(frameCount / 15 * 0.01 + index) * 100;
+                    let noisyRadius = breathScale + offset + noise(frameCount / frame_rate_num * 0.01 + index) * 100;
                     let x = mappedX + cos(angle) * noisyRadius;
                     let y = mappedY + sin(angle) * noisyRadius;
                     vertex(x, y);
@@ -309,8 +364,7 @@
             loadPixels();  // Load pixel data into the `pixels[]` array
 
             // make LFO for the noise
-            let noiseFactor = noise(frameCount / 15 * 0.01) * 10;
-            console.log(noiseFactor);
+            let noiseFactor = noise(frameCount / frame_rate_num * 0.01) * 10;
             for (let y = 0; y < height; y += pixelSize) {
                 for (let x = 0; x < width; x += pixelSize) {
                     let index = (x + y * width) * 4;

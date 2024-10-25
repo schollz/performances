@@ -16,6 +16,7 @@ s.waitForBoot({
 });
 )
 
+
 o.syns.at("main").set(\dbLoop,6);
 (
 o.reset;
@@ -25,6 +26,7 @@ m.stop;
 
 (
 ~bpm = 90;
+NetAddr("127.0.0.1", 8123).sendMsg("/texty","part i of iii","<br><i>If you sit still you'll see something.</i>","<br><i>If you listen, you'll hear something.</i>");
 s.waitForBoot({
 	var bpm = ~bpm;
 	var recCount = 0;

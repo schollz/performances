@@ -30,6 +30,24 @@ func main() {
 	go func() {
 		addr := "127.0.0.1:8123"
 		d := osc.NewStandardDispatcher()
+		d.AddMsgHandler("/texty", func(msg *osc.Message) {
+			mutex.Lock()
+			for c := range connections {
+				err := c.WriteJSON(struct {
+					Text1 string `json:"text1"`
+					Text2 string `json:"text2"`
+					Text3 string `json:"text3"`
+				}{
+					msg.Arguments[0].(string),
+					msg.Arguments[1].(string),
+					msg.Arguments[2].(string),
+				})
+				if err != nil {
+					log.Error(err)
+				}
+			}
+			mutex.Unlock()
+		})
 		d.AddMsgHandler("/loopinfo", func(msg *osc.Message) {
 			loopNum := msg.Arguments[0].(int32)
 			x := msg.Arguments[1].(float32)
