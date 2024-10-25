@@ -3,7 +3,7 @@ Server.default.options.outDevice_("Voicemeeter Input (VB-Audio Voi");
 Server.default.options.inDevice_("Microphone (Scarlett 2i2 USB)");
 s.waitForBoot({
 	p = SerialPort.new(
-		"COM4",
+		"COM7",
 		baudrate: 115200
 	);
 	o=Ouroboros2.new(s);

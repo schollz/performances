@@ -142,33 +142,35 @@
                 invertColor("eee"),
             ];
 
-            // draw all the sliders
-            sliders.forEach((slider, i) => {
-                if (i > 1 && windata[i - 1][0] == 0 && windata[i - 1][1] == 0) {
-                    sliders[i].slider.style('opacity', '0.0');
-                    return;
-                }
-                sliders[i].slider.style('opacity', '0.1');
-                let x1 = slider.x;
-                let x2 = slider.x + slider.width;
-                let y = slider.y;
-                if (i > 1) {
-                    stroke('#' + colors[(i - 1) % colors.length]);
-                } else {
-                    stroke('#' + colors[i % colors.length]);
-                }
-                beginShape();
-                for (let x = x1; x < x2; x += 5) {
-                    let y = slider.y + noise(x * 0.01, frameCount * 0.01, i) * 20 - 5;
-                    vertex(x, y);
-                }
-                endShape();
-                // draw a filed circle with perlin noise at the slider value 
-                let value = slider.slider.value();
-                x = map(value, 0, 100, x1, x2);
-                y = slider.y + noise(x * 0.01, frameCount * 0.01, i) * 20 - 5;
-                line(x, y - 10, x, y + 10);
-            });
+            /*
+                        // draw all the sliders
+                        sliders.forEach((slider, i) => {
+                            if (i > 1 && windata[i - 1][0] == 0 && windata[i - 1][1] == 0) {
+                                sliders[i].slider.style('opacity', '0.0');
+                                return;
+                            }
+                            sliders[i].slider.style('opacity', '0.1');
+                            let x1 = slider.x;
+                            let x2 = slider.x + slider.width;
+                            let y = slider.y;
+                            if (i > 1) {
+                                stroke('#' + colors[(i - 1) % colors.length]);
+                            } else {
+                                stroke('#' + colors[i % colors.length]);
+                            }
+                            beginShape();
+                            for (let x = x1; x < x2; x += 5) {
+                                let y = slider.y + noise(x * 0.01, frameCount * 0.01, i) * 20 - 5;
+                                vertex(x, y);
+                            }
+                            endShape();
+                            // draw a filed circle with perlin noise at the slider value 
+                            let value = slider.slider.value();
+                            x = map(value, 0, 100, x1, x2);
+                            y = slider.y + noise(x * 0.01, frameCount * 0.01, i) * 20 - 5;
+                            line(x, y - 10, x, y + 10);
+                        });
+                        */
 
 
             blendMode(EXCLUSION);
