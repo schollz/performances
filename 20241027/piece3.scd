@@ -21,9 +21,12 @@ o.reset;
 m.stop;
 )
 
+
+NetAddr("127.0.0.1", 8123).sendMsg("/texty","part iii of iii","<br><i>when was the last time</i>","<br><i>you did something for the first time?</i>");
+
 (
 ~bpm = 90;
-NetAddr("127.0.0.1", 8123).sendMsg("/texty","part iii of iii","<br><i>when was the last time</i>","<br><i>you did something for the first time?</i>");
+
 s.waitForBoot({
 	var bpm = ~bpm;
 	var recCount = 0;
