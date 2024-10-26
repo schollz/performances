@@ -28,11 +28,22 @@
             text-align: center;
             z-index: 10000;
         }
+
+        .lowerright {
+            position: absolute;
+            bottom: 0.5em;
+            right: 2em;
+            font-size: 2em;
+            color: #eee;
+            z-index: 10000;
+        }
     </style>
 </head>
 
 <body>
     <div id="app"></div>
+    <p class="lowerright" id="modify">test.com</p>
+
     <script src="https://unpkg.com/typewriter-effect@latest/dist/core.js"></script>
     <script>
         var socket;
